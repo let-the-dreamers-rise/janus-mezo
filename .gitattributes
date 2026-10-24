@@ -1,0 +1,6 @@
+# LF everywhere, including Windows checkouts.
+* text=auto eol=lf
+
+# Third-party Solidity libraries, vendored at the exact versions the deployment was built with:
+# OpenZeppelin Contracts 5.1.0 and forge-std 1.17.0.
+contracts/lib/** linguist-vendored

@@ -1,0 +1,26 @@
+{
+  "name": "@janus/keeper",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "wallet:new": "tsx scripts/new-wallet.ts",
+    "sync": "tsx scripts/sync-artifacts.ts",
+    "seed": "tsx scripts/seed.ts",
+    "scan:nfts": "tsx scripts/scan-nfts.ts",
+    "start": "tsx src/index.ts",
+    "watch": "tsx src/index.ts --watch",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  }
+}

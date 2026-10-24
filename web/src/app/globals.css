@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Light: parchment and darkened bronze. Dark: obsidian and polished bronze. See brand.md. */
+  :root {
+    --background: 40 33% 96%;
+    --foreground: 30 12% 10%;
+    --card: 40 40% 99%;
+    --card-foreground: 30 12% 10%;
+    --popover: 40 40% 99%;
+    --popover-foreground: 30 12% 10%;
+    --muted: 38 25% 91%;
+    --muted-foreground: 30 8% 36%;
+    --secondary: 38 25% 91%;
+    --secondary-foreground: 30 12% 10%;
+    --accent: 38 25% 88%;
+    --accent-foreground: 30 12% 10%;
+    --border: 36 20% 84%;
+    --input: 36 20% 78%;
+    --primary: 32 65% 34%;
+    --primary-foreground: 40 60% 97%;
+    --patina: 166 45% 27%;
+    --patina-foreground: 160 40% 97%;
+    --destructive: 4 65% 44%;
+    --destructive-foreground: 0 0% 100%;
+    --warning: 36 90% 34%;
+    --warning-foreground: 40 60% 97%;
+    --ring: 32 65% 34%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 30 9% 5%;
+    --foreground: 38 28% 90%;
+    --card: 30 8% 8%;
+    --card-foreground: 38 28% 90%;
+    --popover: 30 8% 10%;
+    --popover-foreground: 38 28% 90%;
+    --muted: 30 7% 14%;
+    --muted-foreground: 36 10% 64%;
+    --secondary: 30 7% 14%;
+    --secondary-foreground: 38 28% 90%;
+    --accent: 30 7% 16%;
+    --accent-foreground: 38 28% 90%;
+    --border: 30 7% 18%;
+    --input: 30 7% 24%;
+    --primary: 35 62% 58%;
+    --primary-foreground: 30 30% 8%;
+    --patina: 164 38% 56%;
+    --patina-foreground: 165 40% 8%;
+    --destructive: 5 70% 60%;
+    --destructive-foreground: 5 60% 8%;
+    --warning: 42 85% 62%;
+    --warning-foreground: 30 30% 8%;
+    --ring: 35 62% 58%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.3);
+  }
+}
+
+@layer utilities {
+  /* Numbers that update live must not jitter. */
+  .num {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,19 @@
+node_modules/
+.env
+.env.*
+!.env.example
+contracts/out/
+contracts/cache/
+contracts/broadcast/**/dry-run/
+web/.next/
+web/out/
+web/next-env.d.ts
+*.log
+.DS_Store
+.vercel
+coverage/
+lcov.info
+*.tsbuildinfo
+# Local tooling and private notes
+.claude/
+RESEARCH.md

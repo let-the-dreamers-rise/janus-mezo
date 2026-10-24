@@ -1,0 +1,25 @@
+{
+  "buyers": [
+    {
+      "label": "alpha",
+      "tokenId": "1714",
+      "gauge": "0xD94d160f7B7cB15159FB835E3700eBCf9eEFC052",
+      "orderId": "1"
+    },
+    {
+      "label": "beta",
+      "tokenId": "1715",
+      "gauge": "0x777770c7F1e69215C7Ae2Ec3Ec96459A6434c8A0",
+      "orderId": "2"
+    }
+  ],
+  "shards": [
+    "930",
+    "931",
+    "932"
+  ],
+  "house": {
+    "tokenId": "1713",
+    "gauge": "0x4D39F2e02E6639D893E18d36Ec8B0aAeDe09198c"
+  }
+}
