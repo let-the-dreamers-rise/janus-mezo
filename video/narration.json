@@ -1,0 +1,12 @@
+[
+  { "id": "hook", "text": "Lock Bitcoin on Mezo, and your rewards can grow five times over. But there's a catch." },
+  { "id": "problem", "text": "That five x boost needs veMEZO votes pointed at your lock. And today, getting them is manual. Post bribes, chase voters, poke your boost. Every single week. So most small holders never get there." },
+  { "id": "insight", "text": "And here's the wild part. On mainnet, one dollar of veMEZO decides the boost on seventy five dollars of locked Bitcoin. Votes are the scarce input, and nobody is pricing them." },
+  { "id": "janus", "text": "So I built Janus. One market, two faces. Bitcoin holders buy boost. veMEZO holders sell their votes, and keep ninety percent of every payment." },
+  { "id": "start", "text": "Let's try it the way a judge would. No wallet, no faucet. One click makes a demo wallet. One more, and a starter kit lands in about ten seconds. Gas, MUSD, and a fresh veBTC lock." },
+  { "id": "boost", "text": "Now the bronze face. I open my lock's boost gauge, aim for five x, and tap a quick bid. Janus prices it with Mezo's own boost formula. Votes needed, cost per round, and where my bid lands. First in line. Approve, place, done. And my escrow stays mine until votes actually land." },
+  { "id": "market", "text": "Every epoch, a round runs on chain. Highest bids fill first, the vault votes, and buyers pay only for delivered votes. Round one on Mezo testnet? A hundred votes sold, a lock pushed to five x, and holders paid out in MUSD." },
+  { "id": "earn", "text": "Flip the coin. The patina face. Deposit a veMEZO lock, get jMEZO one to one, and claim MUSD whenever you want." },
+  { "id": "trust", "text": "No new voting system. Janus runs on Mezo's own BoostVoter, veBTC and veMEZO contracts, with a hundred and twenty five contract tests behind it." },
+  { "id": "close", "text": "Janus. Two faces, one market for Mezo's votes. Try it live, right now." }
+]

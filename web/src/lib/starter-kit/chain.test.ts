@@ -36,6 +36,8 @@ interface FakeOptions {
   readonly estimate?: bigint;
   /// Calls whose simulation reverts.
   readonly revertOn?: (call: { readonly to: Address; readonly data?: Hex }) => boolean;
+  /// How many estimateGas calls fail first, as matsnet's RPC sometimes does.
+  readonly flakyEstimates?: number;
   /// Sends that the RPC rejects, by send index.
   readonly rejectSend?: ReadonlySet<number>;
   /// Sends that are mined but revert, by send index.
@@ -62,12 +64,14 @@ function fakeClients({
   allowance = maxUint256,
   estimate = 100_000n,
   revertOn,
+  flakyEstimates = 0,
   rejectSend = new Set(),
   revertMined = new Set(),
 }: FakeOptions = {}) {
   const sent: SentTx[] = [];
   const receipts = new Map<Hash, TransactionReceipt>();
   let nextTokenId = 2_000n;
+  let flaky = flakyEstimates;
   const balances = new Map<string, bigint>([
     [JUDGE.toLowerCase(), 3n * 10n ** 10n],
     [FAUCET.toLowerCase(), 10n ** 16n],
@@ -91,6 +95,10 @@ function fakeClients({
     },
     estimateGas: async (call: { to: Address; data?: Hex }) => {
       if (revertOn?.(call)) throw new Error("execution reverted: LockDurationTooLong");
+      if (flaky > 0) {
+        flaky -= 1;
+        throw new Error("fetch failed");
+      }
       return estimate;
     },
     getTransactionCount: async () => 40,
@@ -225,6 +233,13 @@ describe("kitChain send", () => {
     expect(report.failed?.kind).toBe("veBtc");
     expect(report.failed?.message).toContain("LockDurationTooLong");
     expect(fake.sent.map((tx) => tx.nonce)).toEqual([40, 41, 42]);
+  });
+
+  it("retries an estimate the RPC drops once, so a flaky node does not cost the lock", async () => {
+    const fake = fakeClients({ flakyEstimates: 1 });
+    const report = await kitChain(fake.clients).send(JUDGE, [{ kind: "veBtc", amount: KIT.veBtc }]);
+    expect(report.failed).toBeUndefined();
+    expect(report.sent.map((item) => item.kind)).toEqual(["veBtc"]);
   });
 
   it("stops sending when the RPC rejects a transaction, so no nonce is skipped", async () => {

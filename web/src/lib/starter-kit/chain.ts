@@ -116,9 +116,11 @@ export function kitChain({ publicClient, walletClient }: KitClients, kit: KitCon
   }
 
   /// Simulates the call through eth_estimateGas, so a revert surfaces with its reason, and
-  /// pads the estimate, never going below the call's floor.
+  /// pads the estimate, never going below the call's floor. Matsnet's RPC sometimes drops an
+  /// estimate, so a failed one is asked once more before the item is given up.
   async function gasFor(call: Call, floor: bigint): Promise<bigint> {
-    const padded = gasWithHeadroom(await publicClient.estimateGas({ account: faucet, ...call }));
+    const estimate = () => publicClient.estimateGas({ account: faucet, ...call });
+    const padded = gasWithHeadroom(await estimate().catch(estimate));
     return padded > floor ? padded : floor;
   }
 

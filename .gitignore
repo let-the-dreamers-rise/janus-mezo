@@ -8,6 +8,7 @@ contracts/broadcast/**/dry-run/
 web/.next/
 web/out/
 web/next-env.d.ts
+video/out/
 *.log
 .DS_Store
 .vercel
