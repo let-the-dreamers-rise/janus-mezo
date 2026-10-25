@@ -1,7 +1,17 @@
+import { existsSync, readFileSync } from "node:fs";
+
+// Local runs read the starter-kit faucet key from the repo-root .env that the keeper scripts
+// use, so the key lives in one file. Vercel sets FAUCET_PRIVATE_KEY in the project instead.
+const rootEnv = new URL("../.env", import.meta.url);
+if (!process.env.FAUCET_PRIVATE_KEY && existsSync(rootEnv)) {
+  const match = readFileSync(rootEnv, "utf8").match(/^FAUCET_PRIVATE_KEY=(0x[0-9a-fA-F]{64})\s*$/m);
+  if (match) process.env.FAUCET_PRIVATE_KEY = match[1];
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Janus is a client-side dApp: every page is static and reads the chain in the browser.
-  output: "export",
+  // Every page is prerendered and reads the chain in the browser. The one server route is
+  // /api/starter-kit, which signs testnet starter kits with the faucet key.
   trailingSlash: true,
   reactStrictMode: true,
   images: { unoptimized: true },

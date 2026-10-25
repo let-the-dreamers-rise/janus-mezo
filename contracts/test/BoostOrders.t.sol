@@ -133,6 +133,28 @@ contract BoostOrdersTest is JanusFixture {
         _placeOrder(bob, bobNft, 2e15, 5e18, 10e18);
     }
 
+    function test_cancelOrder_onlyItsOwnerSoEscrowCannotBeTaken() public {
+        uint256 orderId = _placeOrder(bob, bobNft, 2e15, 5e18, 10e18);
+        vm.prank(carol);
+        vm.expectRevert(abi.encodeWithSelector(BoostOrders.NotOrderOwner.selector, orderId));
+        market.cancelOrder(orderId);
+
+        assertEq(musd.balanceOf(carol), 0);
+        assertEq(musd.balanceOf(address(market)), 10e18);
+        assertTrue(market.isActiveOrder(orderId));
+    }
+
+    function test_topUp_onlyItsOwner() public {
+        uint256 orderId = _placeOrder(bob, bobNft, 2e15, 5e18, 10e18);
+        musd.mint(carol, 5e18);
+        vm.startPrank(carol);
+        musd.approve(address(market), 5e18);
+        vm.expectRevert(abi.encodeWithSelector(BoostOrders.NotOrderOwner.selector, orderId));
+        market.topUp(orderId, 5e18);
+        vm.stopPrank();
+        assertEq(market.getOrder(orderId).escrow, 10e18);
+    }
+
     function test_cancelOrder_rejectsUnknownOrder() public {
         vm.prank(bob);
         vm.expectRevert(abi.encodeWithSelector(BoostOrders.UnknownOrder.selector, 99));

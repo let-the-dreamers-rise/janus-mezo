@@ -3,6 +3,7 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Bitcoin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DEMO_CONNECTOR_ID } from "@/lib/wallet/demo-connector";
 import { useWalletAccount } from "@/lib/wallet/passport";
 import { cn } from "@/lib/utils";
 
@@ -11,7 +12,8 @@ const short = (value: string) => `${value.slice(0, 6)}...${value.slice(-4)}`;
 /// RainbowKit's flows (connect, account, network) behind Janus buttons. Bitcoin wallets show
 /// their BTC address; their Mezo smart account is what holds NFTs and signs calls.
 export function WalletButton({ className, label = "Connect wallet" }: { readonly className?: string; readonly label?: string }) {
-  const { networkFamily, walletAddress } = useWalletAccount();
+  const { networkFamily, walletAddress, connector } = useWalletAccount();
+  const demo = connector?.id === DEMO_CONNECTOR_ID;
   return (
     <ConnectButton.Custom>
       {({ account, chain, mounted, openAccountModal, openChainModal, openConnectModal }) => {
@@ -40,6 +42,7 @@ export function WalletButton({ className, label = "Connect wallet" }: { readonly
         return (
           <Button variant="outline" className={className} onClick={openAccountModal} aria-label="Open account details">
             {bitcoin ? <Bitcoin className="text-primary" aria-hidden /> : null}
+            {demo ? <span className="rounded-sm bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary">Demo</span> : null}
             <span className="num">{bitcoin ? short(walletAddress) : account.displayName}</span>
           </Button>
         );

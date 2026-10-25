@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { CoinMark } from "@/components/brand/logo";
 import { ButtonLink } from "@/components/ui/button";
 
@@ -40,7 +41,15 @@ export function Hero() {
             Put my veMEZO to work
           </ButtonLink>
         </div>
-        <p className="text-sm text-muted-foreground">Live on Mezo Matsnet. Every round step is permissionless.</p>
+        <p className="text-sm text-muted-foreground">
+          Live on Mezo Matsnet.{" "}
+          <Link
+            href="/start/"
+            className="rounded-sm font-medium text-foreground underline underline-offset-4 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            New here? Try both sides with a demo wallet and a free starter kit.
+          </Link>
+        </p>
       </div>
       <TwoFacesCoin />
     </section>

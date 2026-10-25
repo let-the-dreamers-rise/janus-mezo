@@ -9,6 +9,7 @@ import { WalletButton } from "@/components/wallet/wallet-button";
 import { cn } from "@/lib/utils";
 
 const NAV = [
+  { href: "/start/", label: "Start", hint: "tour" },
   { href: "/boost/", label: "Boost", hint: "veBTC" },
   { href: "/earn/", label: "Earn", hint: "veMEZO" },
   { href: "/market/", label: "Market", hint: "rounds" },

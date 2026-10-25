@@ -1,4 +1,22 @@
 import { describe, expect, it } from "vitest";
+import { quickBids } from "./bid";
+
+describe("quickBids", () => {
+  const MIN = 10n ** 12n;
+
+  it("offers matching and outbidding the top of the book, rounded up", () => {
+    expect(quickBids(5n * 10n ** 16n, MIN)).toEqual([
+      { label: "Match the top", pricePerVote: 5n * 10n ** 16n },
+      { label: "Top +10%", pricePerVote: 55n * 10n ** 15n },
+      { label: "Top +25%", pricePerVote: 625n * 10n ** 14n },
+    ]);
+    expect(quickBids(3n, MIN).every((pick) => pick.pricePerVote >= MIN)).toBe(true);
+  });
+
+  it("offers nothing when the book is empty", () => {
+    expect(quickBids(0n, MIN)).toEqual([]);
+  });
+});
 import type { Address } from "viem";
 import { checkAmount, checkQuote, describeFill, previewBid, roundsCovered, suggestedEscrow, targetFromHundredths } from "./bid";
 import type { BookEntry } from "./order-book";

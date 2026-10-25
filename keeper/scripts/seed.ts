@@ -25,11 +25,12 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { boostMarketAbi, janusVaultAbi } from "../src/abi/janus.js";
-import { boostVoterAbi, dexRouterAbi, erc20Abi, votingEscrowAbi } from "../src/abi/mezo.js";
+import { boostVoterAbi, erc20Abi, votingEscrowAbi } from "../src/abi/mezo.js";
 import { MEZO_MATSNET } from "../src/config/addresses.js";
 import { MATSNET_CHAIN_ID, mezoMatsnet } from "../src/config/chain.js";
 import { loadDeployment, type JanusDeployment } from "../src/config/deployment.js";
 import { loadSignerKey } from "../src/config/env.js";
+import { ROUTES, hop, quoteRoute, swapBtc, type Route } from "../src/chain/dex.js";
 import { approveIfNeeded, mintedTokenId } from "../src/chain/tokens.js";
 import { sendTx, type Signer } from "../src/chain/tx.js";
 
@@ -79,26 +80,6 @@ function makeSigner(): Signer {
 
 const me = (signer: Signer): Address => signer.walletClient.account.address;
 
-type Route = readonly { from: Address; to: Address; stable: boolean; factory: Address }[];
-
-const hop = (from: Address, to: Address, stable = false) => ({ from, to, stable, factory: MEZO_MATSNET.dexFactory });
-const ROUTES: Record<"musd" | "mezo", Route> = {
-  musd: [hop(MEZO_MATSNET.btcToken, MEZO_MATSNET.musd)],
-  mezo: [hop(MEZO_MATSNET.btcToken, MEZO_MATSNET.mezoToken)],
-};
-const router = { address: MEZO_MATSNET.dexRouter, abi: dexRouterAbi } as const;
-
-/// The router's quote for a route, or null when a pool on it is missing or empty.
-async function quoteRoute(signer: Signer, amountIn: bigint, route: Route): Promise<bigint | null> {
-  try {
-    const amounts = await signer.publicClient.readContract({ ...router, functionName: "getAmountsOut", args: [amountIn, route] });
-    const out = amounts[amounts.length - 1] ?? 0n;
-    return out > 0n ? out : null;
-  } catch {
-    return null;
-  }
-}
-
 async function quote(signer: Signer, btcAmount: string): Promise<void> {
   const amountIn = parseEther(btcAmount);
   const who = me(signer);
@@ -118,24 +99,13 @@ async function quote(signer: Signer, btcAmount: string): Promise<void> {
     "btc-musd-mezo": [hop(MEZO_MATSNET.btcToken, MEZO_MATSNET.musd), hop(MEZO_MATSNET.musd, MEZO_MATSNET.mezoToken)],
   };
   for (const [name, route] of Object.entries(candidates)) {
-    const out = await quoteRoute(signer, amountIn, route);
+    const out = await quoteRoute(signer.publicClient, amountIn, route);
     log("quote", { route: name, btcIn: btcAmount, out: out === null ? "no liquidity" : formatEther(out) });
   }
 }
 
 async function swap(signer: Signer, btcAmount: string, to: "musd" | "mezo" = "musd"): Promise<void> {
-  const amountIn = parseEther(btcAmount);
-  const route = ROUTES[to];
-  const quoted = (await quoteRoute(signer, amountIn, route)) ?? 0n;
-  if (quoted === 0n) throw new Error(`The DEX quotes zero ${to.toUpperCase()} for this swap`);
-  await approveIfNeeded(signer, MEZO_MATSNET.btcToken, MEZO_MATSNET.dexRouter, amountIn, "BTC for router");
-  const deadline = BigInt(Math.floor(Date.now() / 1000) + 600);
-  const data = encodeFunctionData({
-    abi: dexRouterAbi,
-    functionName: "swapExactTokensForTokens",
-    args: [amountIn, (quoted * 98n) / 100n, route, me(signer), deadline],
-  });
-  await sendTx(signer, `swap ${btcAmount} BTC for ${to.toUpperCase()}`, MEZO_MATSNET.dexRouter, data);
+  const quoted = await swapBtc(signer, parseEther(btcAmount), ROUTES[to], `swap ${btcAmount} BTC for ${to.toUpperCase()}`);
   log("swap.done", { to, quoted: formatEther(quoted) });
 }
 

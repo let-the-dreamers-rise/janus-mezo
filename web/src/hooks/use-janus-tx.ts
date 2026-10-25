@@ -8,6 +8,7 @@ import { usePublicClient, useSendTransaction, useSwitchChain } from "wagmi";
 import { explainError } from "@/lib/errors";
 import { MAX_TX_GAS, gasWithHeadroom, likelyOutOfGas } from "@/lib/protocol/keeper/gas";
 import { mezoTestnet, useSendTransaction as usePassportSend, useWalletAccount } from "@/lib/wallet/passport";
+import { recordActivity } from "./use-activity";
 
 export interface TxRequest {
   readonly to: Address;
@@ -53,10 +54,13 @@ export function useJanusTx() {
 
   const send = useCallback(
     async (request: TxRequest): Promise<TransactionReceipt | null> => {
-      const fail = (error: unknown) => {
+      const fail = (error: unknown, hash?: Hash) => {
         const message = explainError(error);
         setState({ status: "error", error: message });
         toast.error(`${request.label} failed`, { description: message });
+        if (accountAddress) {
+          recordActivity({ at: Date.now(), account: accountAddress, label: `${request.label} failed`, status: "error", detail: message, ...(hash ? { hash } : {}) });
+        }
         return null;
       };
       if (!client || !accountAddress) return fail(new Error("Connect a wallet first."));
@@ -88,17 +92,18 @@ export function useJanusTx() {
           receipt = await client.waitForTransactionReceipt({ hash });
         } catch (error) {
           toast.dismiss(pending);
-          return fail(error);
+          return fail(error, hash);
         }
         toast.dismiss(pending);
         if (receipt.status === "success") {
           setState({ status: "success", hash });
           toast.success(request.done);
+          recordActivity({ at: Date.now(), account: accountAddress, label: request.done, status: "success", hash });
           await queryClient.invalidateQueries({ queryKey: ["janus"] });
           return receipt;
         }
         const retry = attempt === 0 && gas !== undefined && gas < MAX_TX_GAS && likelyOutOfGas(receipt.gasUsed, gas);
-        if (!retry) return fail(new Error("The transaction reverted on chain."));
+        if (!retry) return fail(new Error("The transaction reverted on chain."), hash);
         toast.message("Retrying with more gas", { description: "Mezo's gas estimate came in low. Approve once more." });
         gas = MAX_TX_GAS;
       }

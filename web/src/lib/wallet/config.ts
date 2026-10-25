@@ -1,6 +1,7 @@
 import { injectedWallet, metaMaskWallet, walletConnectWallet } from "@rainbow-me/rainbowkit/wallets";
 import { createConfig, http, type Config } from "wagmi";
 import { SITE } from "@/config/site";
+import { demoWallet } from "./demo-connector";
 import {
   getConfig,
   mezoTestnet,
@@ -39,6 +40,7 @@ export function createWagmiConfig(): Config {
         wallets: [unisatWalletMezoTestnet, okxWalletMezoTestnet, xverseWalletMezoTestnet],
       },
       { groupName: "Ethereum", wallets: evmWallets },
+      { groupName: "No wallet? Try it", wallets: [demoWallet] },
     ],
     ssr: true,
   });

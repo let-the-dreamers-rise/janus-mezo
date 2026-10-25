@@ -1,5 +1,6 @@
 import { Address } from "@/components/address";
 import { CoinMark } from "@/components/brand/logo";
+import { IntroButton } from "@/components/onboarding/intro-button";
 import { DEPLOYMENT, IS_DEPLOYED } from "@/config/deployment";
 import { SITE } from "@/config/site";
 
@@ -24,6 +25,7 @@ export function SiteFooter() {
               Source code
             </a>
           </p>
+          <IntroButton variant="ghost" size="sm" className="-ml-3" />
         </div>
         <dl className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-[auto_auto]">
           {IS_DEPLOYED ? (

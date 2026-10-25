@@ -8,6 +8,23 @@ export const TARGET_STEP = 25;
 export const targetFromHundredths = (hundredths: number): bigint => BigInt(hundredths) * 10n ** 16n;
 export const hundredthsFromTarget = (target: bigint): number => Number(target / 10n ** 16n);
 
+export type QuickBid = { readonly label: string; readonly pricePerVote: bigint };
+
+const QUICK_STEPS: ReadonlyArray<readonly [string, bigint]> = [
+  ["Match the top", 100n],
+  ["Top +10%", 110n],
+  ["Top +25%", 125n],
+];
+
+/// One-click bids relative to the best bid in the book, rounded up and never below the minimum.
+export function quickBids(top: bigint, minPricePerVote: bigint): readonly QuickBid[] {
+  if (top <= 0n) return [];
+  return QUICK_STEPS.map(([label, percent]) => {
+    const raised = (top * percent + 99n) / 100n;
+    return { label, pricePerVote: raised < minPricePerVote ? minPricePerVote : raised };
+  });
+}
+
 export type Checked<T> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly message: string };
 
 /// A bid as typed, in MUSD per 1,000 votes, checked and turned into MUSD-wei per vote.

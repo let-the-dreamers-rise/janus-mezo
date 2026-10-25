@@ -7,8 +7,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { IS_DEPLOYED } from "@/config/deployment";
 import { useMarketNow } from "@/hooks/use-market-clock";
 import { useWalletAccount } from "@/lib/wallet/passport";
+import { ActivityLog } from "./activity-log";
 import { LastRound } from "./last-round";
 import { OrderBook } from "./order-book";
+import { RoundHistory } from "./round-history";
 import { RoundPanel } from "./round-panel";
 
 function Content() {
@@ -43,6 +45,23 @@ function Content() {
         </h2>
         <OrderBook snapshot={data} account={accountAddress} />
       </section>
+      <section aria-labelledby="history-title" className="space-y-3">
+        <h2 id="history-title" className="text-lg font-semibold">
+          Round history
+        </h2>
+        <RoundHistory />
+      </section>
+      {accountAddress ? (
+        <section aria-labelledby="activity-title" className="space-y-3">
+          <div className="space-y-1">
+            <h2 id="activity-title" className="text-lg font-semibold">
+              Your activity
+            </h2>
+            <p className="text-sm text-muted-foreground">Calls sent from this browser. The list stays on this device.</p>
+          </div>
+          <ActivityLog account={accountAddress} />
+        </section>
+      ) : null}
     </div>
   );
 }

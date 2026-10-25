@@ -46,7 +46,14 @@ anyone can run them from the Market page.
 
 ## Try it
 
-**Without a wallet.** Open the read-only link above.
+**Fastest: no wallet, no faucet.** Open `/start/` and press **Use a demo wallet**. The app makes a
+throwaway testnet key in this browser and connects it. **Get a starter kit** then sends it gas,
+5 MUSD and a fresh 100-sat veBTC lock (plus a 5 MEZO veMEZO lock while the kit wallet has MEZO), in
+about 10 seconds. The checklist on `/start/` walks through gauge, bid, deposit, round, boost and
+claim, and Market's **Run the whole round** runs every due step in order. The demo key only signs
+transactions; **Forget** in the wallet menu deletes it. Kits are rate limited per IP and per address.
+
+**Read-only.** Open the read-only link above.
 
 1. Boost shows the demo account's three veBTC NFTs: the house gauge that collects unsold votes, and
    two NFTs with standing bids. The calculator prices boost for any lock size against live totals.
@@ -89,14 +96,14 @@ house gauge on veBTC #1713.
 |---|---|
 | [`contracts/`](contracts) | Foundry. `JanusVault` (veMEZO shards, jMEZO, MUSD rewards) and `BoostMarket` (orders, rounds, settlement), with libraries for the boost formula, epochs, order sorting and vote splitting |
 | [`keeper/`](keeper) | TypeScript and viem. Drives rounds, pokes stale boosts, and holds the seed scripts. Its pure planning code is shared with the web app |
-| [`web/`](web) | Next.js 14 with wagmi, RainbowKit and Mezo Passport. Pages: Boost, Earn and Market |
+| [`web/`](web) | Next.js 14 with wagmi, RainbowKit and Mezo Passport. Pages: Start, Boost, Earn and Market, plus the `/api/starter-kit` route that hands demo accounts their testnet kit |
 
 ## Run it locally
 
 You need Foundry, Node 22 and pnpm.
 
 ```bash
-# Contracts: 123 unit tests
+# Contracts: 125 unit tests
 cd contracts
 forge build
 forge test
@@ -115,16 +122,24 @@ pnpm start    # run due round steps until the market rests
 pnpm watch    # keep running, every KEEPER_INTERVAL_SECONDS (default 300)
 pnpm sync     # copy ABIs, the deployment record and shared code into web/
 pnpm seed status
+pnpm faucet status   # the starter-kit wallet: balances and lock allowances
 ```
 
 ```bash
-# Web: 99 tests
+# Web: 224 tests
 cd web
 pnpm install
 pnpm test
 pnpm dev      # http://localhost:3000
-pnpm build    # static export in web/out
+pnpm build && pnpm start
 ```
+
+The starter kit signs with its own wallet, never the owner key. `FAUCET_PRIVATE_KEY` is a
+server-only variable (set it in the host's environment; locally it is read from the repository
+`.env`). Without it the kit card says the kit is unavailable and everything else works.
+`pnpm faucet` in `keeper/` sets that wallet up: `fund [btc]` from the deployer,
+`swap [btc] [musd|mezo]`, `quote` and `approve`. veMEZO kits need MEZO from
+https://faucet.test.mezo.org, since matsnet has no DEX pool for it.
 
 `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` is optional. Without it the app offers injected EVM wallets
 and the Mezo Passport Bitcoin wallets.
@@ -173,9 +188,9 @@ kept modest instead of always sending at the block limit.
 
 | Package | Tests | Coverage |
 |---|---|---|
-| contracts | 123 unit tests, 3 matsnet fork tests | 98.95% of lines, 90.82% of branches |
+| contracts | 125 unit tests, 3 matsnet fork tests | 98.95% of lines, 90.82% of branches |
 | keeper | 38 | |
-| web | 99 | 98.9% of lines in `web/src/lib` |
+| web | 224 | 98.88% of lines, 92.55% of branches in `web/src/lib` |
 
 ## Planned
 

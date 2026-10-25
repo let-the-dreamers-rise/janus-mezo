@@ -2,6 +2,7 @@
 
 import { ConnectCard, NotDeployed, WatchBanner } from "@/components/gates";
 import { Num } from "@/components/num";
+import { StarterKitCard } from "@/components/onboarding/starter-kit-card";
 import { PageHeader } from "@/components/page-header";
 import { Stat } from "@/components/stat";
 import { ErrorState } from "@/components/states";
@@ -48,6 +49,7 @@ function YourSide() {
       </div>
     );
   }
+  const needsKit = !account.readOnly && account.data.veMezo.length === 0 && account.data.jmezo === 0n;
   return (
     <div className="grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
       {account.readOnly ? (
@@ -61,6 +63,7 @@ function YourSide() {
           Your veMEZO NFTs
         </h2>
         <DepositList account={account.data} />
+        {needsKit ? <StarterKitCard /> : null}
       </section>
     </div>
   );

@@ -7,6 +7,7 @@
     "wallet:new": "tsx scripts/new-wallet.ts",
     "sync": "tsx scripts/sync-artifacts.ts",
     "seed": "tsx scripts/seed.ts",
+    "faucet": "tsx scripts/faucet.ts",
     "scan:nfts": "tsx scripts/scan-nfts.ts",
     "start": "tsx src/index.ts",
     "watch": "tsx src/index.ts --watch",

@@ -2,6 +2,7 @@
 
 import { Bitcoin } from "lucide-react";
 import { ConnectCard, NotDeployed, WatchBanner } from "@/components/gates";
+import { StarterKitCard } from "@/components/onboarding/starter-kit-card";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState, ErrorState } from "@/components/states";
 import { ButtonLink } from "@/components/ui/button";
@@ -32,17 +33,21 @@ function YourVeBtc({ snapshot }: { readonly snapshot: MarketSnapshot | undefined
   }
   if (account.data.veBtc.length === 0) {
     return (
-      <EmptyState
-        icon={Bitcoin}
-        title="No veBTC NFTs in this account"
-        action={
-          <ButtonLink href={SITE.mezoDocsUrl} variant="outline" target="_blank" rel="noreferrer">
-            How veBTC works
-          </ButtonLink>
-        }
-      >
-        Lock BTC in Mezo Earn to get a veBTC NFT, then come back to bid for its boost.
-      </EmptyState>
+      <div className="space-y-4">
+        <EmptyState
+          icon={Bitcoin}
+          title="No veBTC NFTs in this account"
+          action={
+            <ButtonLink href={SITE.mezoDocsUrl} variant="outline" target="_blank" rel="noreferrer">
+              How veBTC works
+            </ButtonLink>
+          }
+        >
+          Lock BTC in Mezo Earn to get a veBTC NFT, then come back to bid for its boost.
+          {account.readOnly ? null : " Or take the free starter kit below, which includes one."}
+        </EmptyState>
+        {account.readOnly ? null : <StarterKitCard />}
+      </div>
     );
   }
   const nfts = account.data;

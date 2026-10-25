@@ -17,14 +17,17 @@ import {
   checkQuote,
   describeFill,
   previewBid,
+  quickBids,
   roundsCovered,
   suggestedEscrow,
   targetFromHundredths,
 } from "@/lib/protocol/bid";
 import { additionalVotes } from "@/lib/protocol/boost-math";
 import { costOfVotes, quoteFromPricePerVote, toRaw } from "@/lib/protocol/units";
+import { QuickChips } from "./quick-chips";
 
 const SUGGESTED_ROUNDS = 4n;
+const TARGET_PICKS = [200, 300, 500] as const;
 
 interface OrderFormProps {
   readonly nft: VeBtcNft;
@@ -126,6 +129,14 @@ export function OrderForm({ nft, snapshot, account }: OrderFormProps) {
           onValueChange={([value]) => setHundredths(value ?? TARGET_MAX)}
           thumbLabel="Target boost"
         />
+        <QuickChips
+          label="Target presets"
+          chips={TARGET_PICKS.map((pick) => ({
+            label: `${pick / 100}x`,
+            active: hundredths === pick,
+            onPick: () => setHundredths(pick),
+          }))}
+        />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field
@@ -161,6 +172,13 @@ export function OrderForm({ nft, snapshot, account }: OrderFormProps) {
           }
         />
       </div>
+      <QuickChips
+        label="Bid presets"
+        chips={quickBids(topQuote, snapshot.minPricePerVote).map((pick) => {
+          const text = toRaw(quoteFromPricePerVote(pick.pricePerVote));
+          return { label: `${pick.label} (${text})`, active: quote === text, onPick: () => setQuote(text) };
+        })}
+      />
       <dl className="grid gap-x-4 gap-y-3 rounded-lg bg-muted/60 p-4 text-sm sm:grid-cols-3">
         <div>
           <dt className="text-muted-foreground">Votes to reach {(hundredths / 100).toFixed(2)}x</dt>

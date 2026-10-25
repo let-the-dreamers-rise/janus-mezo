@@ -1,10 +1,11 @@
 "use client";
 
-import { Check, Play } from "lucide-react";
+import { Check, FastForward, Play } from "lucide-react";
 import { Num } from "@/components/num";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WalletButton } from "@/components/wallet/wallet-button";
+import { useRunRound } from "@/hooks/use-run-round";
 import { useRunStep } from "@/hooks/use-run-step";
 import type { MarketSnapshot } from "@/lib/chain/market-snapshot";
 import { PHASE, PHASE_NAMES, nextStep, phaseName } from "@/lib/protocol/round-step";
@@ -48,6 +49,8 @@ export function RoundPanel({ snapshot, now }: { readonly snapshot: MarketSnapsho
   const window = voteWindow(now);
   const { isConnected } = useWalletAccount();
   const runner = useRunStep();
+  const whole = useRunRound();
+  const busy = runner.busy || whole.progress.running;
   const open = round.phase !== PHASE.Idle;
 
   return (
@@ -97,13 +100,23 @@ export function RoundPanel({ snapshot, now }: { readonly snapshot: MarketSnapsho
             </p>
           </div>
           {step.kind === "wait" ? null : isConnected ? (
-            <Button loading={runner.busy} onClick={() => void runner.run(step, snapshot)} className="shrink-0">
-              <Play aria-hidden /> Run this step
-            </Button>
+            <div className="flex shrink-0 flex-wrap gap-2">
+              <Button variant="outline" disabled={busy} loading={runner.busy && !whole.progress.running} onClick={() => void runner.run(step, snapshot)}>
+                <Play aria-hidden /> Run this step
+              </Button>
+              <Button disabled={busy} loading={whole.progress.running} onClick={() => void whole.runAll()}>
+                {whole.progress.running ? null : <FastForward aria-hidden />} Run the whole round
+              </Button>
+            </div>
           ) : (
             <WalletButton label="Connect to run it" className="shrink-0" />
           )}
         </div>
+        <p className="min-h-5 text-sm text-muted-foreground" aria-live="polite">
+          {whole.progress.current
+            ? `Call ${whole.progress.current.index}: ${whole.progress.current.label}. Each call is confirmed before the next.`
+            : null}
+        </p>
         <p className="text-xs text-muted-foreground">
           Anyone can run these calls. The contract checks every rule, so a step that is not due simply reverts before you
           sign.

@@ -6,6 +6,7 @@ import "./globals.css";
 import { SITE } from "@/config/site";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { IntroDialog } from "@/components/onboarding/intro-dialog";
 import { THEME_SCRIPT } from "@/lib/theme";
 import { Providers } from "./providers";
 
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             {children}
           </main>
           <SiteFooter />
+          <IntroDialog />
         </Providers>
       </body>
     </html>

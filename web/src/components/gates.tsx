@@ -3,6 +3,7 @@
 import { Eye, Hammer, Wallet } from "lucide-react";
 import type { ReactNode } from "react";
 import type { Address } from "viem";
+import { DemoWalletButton } from "@/components/onboarding/demo-wallet-button";
 import { EmptyState } from "@/components/states";
 import { WalletButton } from "@/components/wallet/wallet-button";
 import { DEPLOYMENT } from "@/config/deployment";
@@ -40,17 +41,21 @@ export function ConnectCard({ title, children }: { readonly title: string; reado
       title={title}
       action={
         <div className="flex flex-col items-center gap-3">
-          <WalletButton />
+          <div className="flex flex-wrap justify-center gap-2">
+            <WalletButton />
+            <DemoWalletButton />
+          </div>
           <a
             href={`?as=${DEMO_ACCOUNT}`}
             className="rounded-sm text-sm text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            Or preview the demo account read-only
+            Or browse the seeded market account read-only
           </a>
         </div>
       }
     >
-      {children ?? "Bitcoin wallets act through their Mezo smart account, so they work here too."}
+      {children ??
+        "Bitcoin wallets act through their Mezo smart account, so they work here too. No wallet? A demo wallet takes one click and comes with a free starter kit."}
     </EmptyState>
   );
 }
