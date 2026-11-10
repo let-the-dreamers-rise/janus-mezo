@@ -13,6 +13,7 @@ const NAV = [
   { href: "/boost/", label: "Boost", hint: "veBTC" },
   { href: "/earn/", label: "Earn", hint: "veMEZO" },
   { href: "/market/", label: "Market", hint: "rounds" },
+  { href: "/proof/", label: "Proof", hint: "evidence" },
 ] as const;
 
 function NavLinks({ className }: { readonly className?: string }) {
