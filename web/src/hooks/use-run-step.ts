@@ -20,12 +20,13 @@ const DONE: Record<Step["kind"], string> = {
   resetShards: "Shards reset",
   settle: "Round settled",
   castVotes: "Votes cast",
+  pokeFills: "Boosts applied",
   finalize: "Round finalized",
   applyBoosts: "Boosts applied",
   wait: "",
 };
 
-async function batchSize(client: PublicClient | undefined, account: Address | undefined, kind: "resetShards" | "castVotes") {
+async function batchSize(client: PublicClient | undefined, account: Address | undefined, kind: "resetShards" | "castVotes" | "pokeFills") {
   if (!client || !account) return 1n;
   const fit = await fitBatch(MAX_BATCH, GAS_BUDGET, async (size) => {
     try {
@@ -54,6 +55,7 @@ export function useRunStep() {
           break;
         case "resetShards":
         case "castVotes":
+        case "pokeFills":
           call = calls.roundBatch(step.kind, await batchSize(client, accountAddress, step.kind));
           break;
         case "applyBoosts":

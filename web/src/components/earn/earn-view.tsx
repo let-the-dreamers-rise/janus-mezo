@@ -11,6 +11,7 @@ import { IS_DEPLOYED } from "@/config/deployment";
 import { useJanusAccount } from "@/hooks/use-janus-account";
 import { useMarket } from "@/hooks/use-market";
 import { DepositList } from "./deposit-list";
+import { PoolPanel } from "./pool-panel";
 import { PositionCard } from "./position-card";
 import { ShardTable } from "./shard-table";
 
@@ -27,7 +28,7 @@ function VaultStats() {
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       <Stat label="Votes in the vault" loading={loading} value={<Num value={data?.vault.votingPower} kind="votes" />} hint={data ? `${data.vault.shards.length} of ${data.vault.maxShards.toString()} shard slots` : undefined} />
-      <Stat label="jMEZO supply" loading={loading} value={<Num value={data?.vault.supply} kind="jmezo" />} hint="1 jMEZO per MEZO locked" />
+      <Stat label="jMEZO supply" loading={loading} value={<Num value={data?.vault.supply} kind="jmezo" />} hint="Each jMEZO is a share of the MEZO locked" />
       <Stat label="Paid to holders" loading={loading} value={<Num value={data?.vault.totalRewards} kind="musd" />} hint="All time" />
       <Stat label="Holders' share" loading={loading} value={<Num value={holdersShare} kind="percent" />} hint="Of every payment. The rest is the treasury fee." />
     </div>
@@ -90,13 +91,14 @@ export function EarnView() {
         <>
           <VaultStats />
           <YourSide />
+          <PoolPanel />
           <section aria-labelledby="shards-title" className="space-y-3">
             <div className="space-y-1">
               <h2 id="shards-title" className="text-lg font-semibold">
                 Vault shards
               </h2>
               <p className="text-sm text-muted-foreground">
-                Any jMEZO holder can redeem any shard by burning jMEZO equal to the MEZO it locks.
+                Any jMEZO holder can redeem any shard by burning jMEZO for its share of the vault.
               </p>
             </div>
             {market.data ? (

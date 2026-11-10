@@ -112,6 +112,7 @@ function chain(s: Scenario) {
       onRead(vaultContract, "minShardAmount", () => E18),
       onRead(vaultContract, "MAX_SHARDS", () => 100n),
       onRead(vaultContract, "shardAmount", () => POWER),
+      onRead(vaultContract, "redeemCost", () => POWER + 1n),
       onRead(veMezoContract, "totalVotingPower", () => 1_000n * E18),
       onRead(veMezoContract, "votingPowerOfNFT", () => POWER),
       onRead(veBtcContract, "unboostedTotalVotingPower", () => 10n ** 16n),

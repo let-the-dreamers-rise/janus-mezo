@@ -11,3 +11,5 @@ export const veBtcContract = { address: DEPLOYMENT.veBtc, abi: votingEscrowAbi }
 export const musdContract = { address: DEPLOYMENT.musd, abi: erc20Abi } as const;
 export const mezoTokenContract = { address: MEZO_MATSNET.mezoToken, abi: erc20Abi } as const;
 export const BOOST_GAUGE_FACTORY = MEZO_MATSNET.boostGaugeFactory;
+export const DEX_ROUTER = MEZO_MATSNET.dexRouter;
+export const DEX_FACTORY = MEZO_MATSNET.dexFactory;

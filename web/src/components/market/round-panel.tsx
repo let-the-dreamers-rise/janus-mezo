@@ -19,7 +19,7 @@ const STEPS = PHASE_NAMES.slice(1);
 /// `finished` marks every phase done, for a round that has closed.
 function PhaseStepper({ phase, finished }: { readonly phase: number; readonly finished: boolean }) {
   return (
-    <ol className="grid grid-cols-4 gap-2" aria-label="Round phases">
+    <ol className="grid grid-cols-5 gap-2" aria-label="Round phases">
       {STEPS.map((name, index) => {
         const value = index + 1;
         const done = finished || (phase !== PHASE.Idle && value < phase);

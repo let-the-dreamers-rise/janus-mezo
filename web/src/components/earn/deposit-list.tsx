@@ -24,8 +24,9 @@ function DepositButton({ nft, owner }: { readonly nft: VeMezoNft; readonly owner
         title={`Deposit veMEZO NFT #${nft.id}?`}
         description={
           <>
-            Depositing makes this lock permanent. You receive <Num value={nft.amount} kind="jmezo" />, which earns 90% of
-            what buyers pay for the vault&apos;s votes. To take this NFT back, burn the same amount of jMEZO.
+            Depositing makes this lock permanent. You receive jMEZO for the <Num value={nft.amount} kind="mezo" /> it
+            locks, which earns 90% of what buyers pay for the vault&apos;s votes. Burn jMEZO to take a shard back out at the
+            vault&apos;s exchange rate.
           </>
         }
       >

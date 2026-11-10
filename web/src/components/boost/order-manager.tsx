@@ -159,7 +159,7 @@ function CancelOrder({ order }: { readonly order: OrderView }) {
 export function OrderManager({ order, snapshot, account }: OrderManagerProps) {
   const [mode, setMode] = useState<Mode | undefined>(undefined);
   const projection = snapshot.projection.find((p) => p.entry.orderId === order.orderId);
-  const charging = snapshot.round.phase === PHASE.Voting || snapshot.round.phase === PHASE.Voted;
+  const charging = snapshot.round.phase >= PHASE.Voting;
   const locked = charging && snapshot.roundOrderIds.includes(order.orderId);
 
   return (

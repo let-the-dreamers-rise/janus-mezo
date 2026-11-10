@@ -3,7 +3,7 @@ import { PHASE, PHASE_NAMES, nextAction, type MarketSignals, type RoundView, typ
 export { PHASE, PHASE_NAMES };
 export type { MarketSignals, RoundView };
 
-export type StepKind = "startRound" | "resetShards" | "settle" | "castVotes" | "finalize" | "applyBoosts";
+export type StepKind = "startRound" | "resetShards" | "settle" | "castVotes" | "pokeFills" | "finalize" | "applyBoosts";
 
 export interface Step {
   readonly kind: StepKind | "wait";
@@ -55,6 +55,8 @@ export function nextStep(round: RoundView, now: bigint, signals: MarketSignals, 
       return { kind: "settle", label: "Settle", detail: "Prices every bid and fills the highest first." };
     case "castVotes":
       return { kind: "castVotes", label: "Cast votes", detail: "Votes each shard's slice on the buyers' gauges." };
+    case "pokeFills":
+      return { kind: "pokeFills", label: "Apply boosts", detail: "Writes each filled buyer's new boost into Mezo Earn." };
     case "finalize":
       return action.stale
         ? { kind: "finalize", label: "Close the stale round", detail: "Charges only the votes that landed." }

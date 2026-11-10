@@ -202,7 +202,7 @@ describe("kitChain send", () => {
   it("never sends with less than the measured need when the estimate comes back low", async () => {
     const fake = fakeClients({ estimate: 21_064n });
     await kitChain(fake.clients).send(JUDGE, FULL);
-    expect(fake.sent.map((tx) => tx.gas)).toEqual([60_000n, 100_000n, 1_200_000n, 1_200_000n]);
+    expect(fake.sent.map((tx) => tx.gas)).toEqual([60_000n, 400_000n, 1_200_000n, 1_200_000n]);
   });
 
   it("caps the gas limit to fit a block", async () => {

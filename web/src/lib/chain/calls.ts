@@ -1,5 +1,6 @@
-import { encodeFunctionData, type Address, type Hex } from "viem";
-import { BOOST_GAUGE_FACTORY, marketContract, musdContract, vaultContract, veMezoContract, voterContract } from "./contracts";
+import { encodeFunctionData, erc20Abi, type Address, type Hex } from "viem";
+import { BOOST_GAUGE_FACTORY, DEX_FACTORY, DEX_ROUTER, marketContract, musdContract, vaultContract, veMezoContract, voterContract } from "./contracts";
+import { dexRouterAbi } from "./pool-snapshot";
 
 export interface Call {
   readonly to: Address;
@@ -48,8 +49,20 @@ export const calls = {
   }),
   redeem: (tokenId: bigint): Call => vault(encodeFunctionData({ abi: vaultContract.abi, functionName: "redeem", args: [tokenId] })),
   claim: (): Call => vault(encodeFunctionData({ abi: vaultContract.abi, functionName: "claim" })),
+  approveRouter: (token: Address, amount: bigint): Call => ({
+    to: token,
+    data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [DEX_ROUTER, amount] }),
+  }),
+  swap: (from: Address, to: Address, amountIn: bigint, minOut: bigint, recipient: Address, deadline: bigint): Call => ({
+    to: DEX_ROUTER,
+    data: encodeFunctionData({
+      abi: dexRouterAbi,
+      functionName: "swapExactTokensForTokens",
+      args: [amountIn, minOut, [{ from, to, stable: false, factory: DEX_FACTORY }], recipient, deadline],
+    }),
+  }),
   roundStep: (kind: "startRound" | "settle" | "finalize"): Call =>
     market(encodeFunctionData({ abi: marketContract.abi, functionName: kind })),
-  roundBatch: (kind: "resetShards" | "castVotes", size: bigint): Call =>
+  roundBatch: (kind: "resetShards" | "castVotes" | "pokeFills", size: bigint): Call =>
     market(encodeFunctionData({ abi: marketContract.abi, functionName: kind, args: [size] })),
 } as const;

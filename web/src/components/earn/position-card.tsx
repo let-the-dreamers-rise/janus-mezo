@@ -36,6 +36,9 @@ export function PositionCard({ account, supply }: { readonly account: AccountSna
             <dd className="text-xl font-semibold"><Num value={account.claimed} kind="musd" /></dd>
           </div>
         </dl>
+        <p className="text-xs text-muted-foreground">
+          Each payment streams to jMEZO holders over 7 days, so claimable MUSD grows between rounds.
+        </p>
         <Button
           variant="patina"
           className="w-full"

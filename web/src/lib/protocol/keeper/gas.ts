@@ -4,13 +4,18 @@ export const BLOCK_GAS_LIMIT = 10_000_000n;
 /// Largest gas limit a transaction is sent with, leaving room for others in the block.
 export const MAX_TX_GAS = 9_500_000n;
 
-/// The gas limit to send with: the estimate plus half again, capped to fit a block.
+/// Least gas any transaction is sent with. Mezo has estimated 32k for calls that need 70k to
+/// 300k, and a failed send costs another signature; unused gas is largely refunded.
+export const MIN_TX_GAS = 400_000n;
+
+/// The gas limit to send with: the estimate plus half again, floored and capped to fit a block.
 /// Matsnet estimates can come in low. A veMEZO deposit sent one block after its lock was
 /// minted was estimated at 545k gas and reverted, while it needs between 600k and 800k.
 /// Gas costs a few hundred wei here, so the margin is close to free.
 export function gasWithHeadroom(estimate: bigint, cap: bigint = MAX_TX_GAS): bigint {
   const padded = estimate + estimate / 2n;
-  return padded < cap ? padded : cap;
+  const floored = padded > MIN_TX_GAS ? padded : MIN_TX_GAS;
+  return floored < cap ? floored : cap;
 }
 
 /// A revert that burned at least 90% of its limit most likely ran out of gas: either the

@@ -1,7 +1,8 @@
 import { decodeFunctionData, getAddress, type Abi, type Address } from "viem";
 import { describe, expect, it } from "vitest";
 import { calls, type Call } from "./calls";
-import { BOOST_GAUGE_FACTORY, marketContract, musdContract, vaultContract, veMezoContract, voterContract } from "./contracts";
+import { dexRouterAbi } from "./pool-snapshot";
+import { BOOST_GAUGE_FACTORY, DEX_FACTORY, DEX_ROUTER, marketContract, musdContract, vaultContract, veMezoContract, voterContract } from "./contracts";
 
 const OWNER: Address = "0x00000000000000000000000000000000000000c1";
 
@@ -12,6 +13,15 @@ const decode = (call: Call, contract: { readonly address: Address; readonly abi:
 };
 
 describe("calls", () => {
+  it("encodes a jMEZO swap through the Mezo DEX router with the volatile route", () => {
+    const router = { address: DEX_ROUTER, abi: dexRouterAbi as Abi };
+    const call = calls.swap(vaultContract.address, musdContract.address, 10n, 9n, OWNER, 99n);
+    expect(decode(call, router)).toEqual({
+      functionName: "swapExactTokensForTokens",
+      args: [10n, 9n, [{ from: vaultContract.address, to: musdContract.address, stable: false, factory: DEX_FACTORY }], getAddress(OWNER), 99n],
+    });
+  });
+
   it("encodes bids against BoostMarket and the MUSD approval it needs", () => {
     expect(decode(calls.approveMusd(5n), musdContract)).toEqual({ functionName: "approve", args: [marketContract.address, 5n] });
     expect(decode(calls.placeOrder(1714n, 50n, 500n, 3n), marketContract)).toEqual({ functionName: "placeOrder", args: [1714n, 50n, 500n, 3n] });

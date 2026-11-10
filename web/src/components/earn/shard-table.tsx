@@ -10,7 +10,7 @@ import { calls } from "@/lib/chain/calls";
 
 function RedeemButton({ shard, jmezo }: { readonly shard: ShardView; readonly jmezo: bigint | undefined }) {
   const tx = useJanusTx();
-  const enough = jmezo !== undefined && jmezo >= shard.amount;
+  const enough = jmezo !== undefined && jmezo >= shard.redeemCost;
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -22,7 +22,7 @@ function RedeemButton({ shard, jmezo }: { readonly shard: ShardView; readonly jm
         title={`Redeem veMEZO NFT #${shard.id}?`}
         description={
           <>
-            This burns <Num value={shard.amount} kind="jmezo" /> and sends the NFT to this account. The lock stays
+            This burns <Num value={shard.redeemCost} kind="jmezo" /> and sends the NFT to this account. The lock stays
             permanent, and votes it already cast stay in place for this epoch.
           </>
         }

@@ -2,8 +2,8 @@
 import { inVoteWindow, voteEnd } from "./epochs";
 
 /// Mirrors BoostMarket.Phase.
-export const PHASE = { Idle: 0, Resetting: 1, Ready: 2, Voting: 3, Voted: 4 } as const;
-export const PHASE_NAMES = ["Idle", "Resetting", "Ready", "Voting", "Voted"] as const;
+export const PHASE = { Idle: 0, Resetting: 1, Ready: 2, Voting: 3, Poking: 4, Voted: 5 } as const;
+export const PHASE_NAMES = ["Idle", "Resetting", "Ready", "Voting", "Poking", "Voted"] as const;
 
 export interface RoundView {
   readonly phase: number;
@@ -31,6 +31,7 @@ export type Action =
   | { readonly kind: "resetShards" }
   | { readonly kind: "settle" }
   | { readonly kind: "castVotes" }
+  | { readonly kind: "pokeFills" }
   | { readonly kind: "finalize"; readonly stale: boolean }
   | { readonly kind: "wait"; readonly code: WaitCode; readonly reason: string };
 
@@ -50,6 +51,8 @@ export function nextAction(round: RoundView, now: bigint, signals: MarketSignals
     return { kind: "startRound" };
   }
   if (round.phase === PHASE.Voted) return { kind: "finalize", stale: false };
+  // Pokes don't depend on the vote window, and a buyer should get the boost it paid for.
+  if (round.phase === PHASE.Poking) return { kind: "pokeFills" };
 
   const stale = now > voteEnd(round.epoch) || now > round.startedAt + signals.roundTimeout;
   if (stale) return { kind: "finalize", stale: true };

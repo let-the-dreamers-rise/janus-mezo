@@ -20,6 +20,8 @@ export interface RoundView {
 export interface ShardView {
   readonly id: bigint;
   readonly amount: bigint;
+  /// jMEZO burned to take this shard out at the vault's current exchange rate.
+  readonly redeemCost: bigint;
   readonly power: bigint;
   readonly lastVoted: bigint;
   readonly usedWeights: bigint;
@@ -84,8 +86,9 @@ const orNone = (gauge: Address): Address | undefined => (gauge === zeroAddress ?
 async function readShards(client: PublicClient, blockNumber: bigint, ids: readonly bigint[], now: bigint) {
   if (ids.length === 0) return [] as ShardView[];
   const at = { blockNumber, allowFailure: false } as const;
-  const [amounts, powers, lastVoted, usedWeights] = await Promise.all([
+  const [amounts, redeemCosts, powers, lastVoted, usedWeights] = await Promise.all([
     client.multicall({ ...at, contracts: ids.map((id) => ({ ...vaultContract, functionName: "shardAmount" as const, args: [id] as const })) }),
+    client.multicall({ ...at, contracts: ids.map((id) => ({ ...vaultContract, functionName: "redeemCost" as const, args: [id] as const })) }),
     client.multicall({ ...at, contracts: ids.map((id) => ({ ...veMezoContract, functionName: "votingPowerOfNFT" as const, args: [id] as const })) }),
     client.multicall({ ...at, contracts: ids.map((id) => ({ ...voterContract, functionName: "lastVoted" as const, args: [id] as const })) }),
     client.multicall({ ...at, contracts: ids.map((id) => ({ ...voterContract, functionName: "usedWeights" as const, args: [id] as const })) }),
@@ -96,6 +99,7 @@ async function readShards(client: PublicClient, blockNumber: bigint, ids: readon
     return {
       id,
       amount: amounts[i] ?? 0n,
+      redeemCost: redeemCosts[i] ?? 0n,
       power: powers[i] ?? 0n,
       lastVoted: voted,
       usedWeights: usedWeights[i] ?? 0n,

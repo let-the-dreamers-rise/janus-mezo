@@ -38,6 +38,7 @@ describe("nextStep", () => {
     expect(nextStep(open(PHASE.Resetting), inWindow, signals, 0).kind).toBe("resetShards");
     expect(nextStep(open(PHASE.Ready), inWindow, signals, 0).kind).toBe("settle");
     expect(nextStep(open(PHASE.Voting), inWindow, signals, 0).kind).toBe("castVotes");
+    expect(nextStep(open(PHASE.Poking), inWindow, signals, 0)).toMatchObject({ kind: "pokeFills", label: "Apply boosts" });
     expect(nextStep(open(PHASE.Voted), EPOCH + 7n * DAY, signals, 0)).toMatchObject({ kind: "finalize", label: "Finalize" });
   });
 
