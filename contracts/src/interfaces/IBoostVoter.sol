@@ -25,6 +25,9 @@ interface IBoostVoter {
     function vote(uint256 tokenId, address[] calldata gauges, uint256[] calldata weights)
         external;
     function reset(uint256 tokenId) external;
+    function claimBribes(address[] calldata bribes, address[][] calldata tokens, uint256 tokenId)
+        external;
+    function gaugeToBribe(address gauge) external view returns (address);
     function poke(uint256 tokenId) external;
     function pokeBoost(uint256 boostableTokenId) external;
     function pokeBoosts(uint256[] calldata boostableTokenIds) external;

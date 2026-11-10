@@ -22,6 +22,12 @@ contract Deploy is Script {
         address musd;
     }
 
+    struct LaunchSettings {
+        address treasury;
+        uint256 depositCap;
+    }
+
+    uint256 internal constant MEZO_MAINNET = 31612;
     uint256 internal constant MIN_SHARD_AMOUNT = 1e18;
     uint256 internal constant MIN_PRICE_PER_VOTE = 1e12;
     uint256 internal constant FEE_BPS = 1_000;
@@ -30,7 +36,13 @@ contract Deploy is Script {
         MezoAddresses memory mezo = mezoAddresses(block.chainid);
         uint256 key = vm.envUint("DEPLOYER_PRIVATE_KEY");
         address deployer = vm.addr(key);
-        address treasury = vm.envOr("JANUS_TREASURY", deployer);
+        LaunchSettings memory settings = launchSettings(
+            block.chainid,
+            deployer,
+            vm.envOr("JANUS_TREASURY", address(0)),
+            vm.envOr("JANUS_DEPOSIT_CAP", uint256(0))
+        );
+        address treasury = settings.treasury;
 
         vm.startBroadcast(key);
         vault = new JanusVault(
@@ -54,11 +66,29 @@ contract Deploy is Script {
             })
         );
         vault.setMarket(address(market));
+        if (settings.depositCap != type(uint256).max) vault.setDepositCap(settings.depositCap);
         vm.stopBroadcast();
 
         _record(vault, market, mezo, deployer, treasury);
         console2.log("JanusVault", address(vault));
         console2.log("BoostMarket", address(market));
+    }
+
+    /// @notice Mainnet must name a treasury and a deposit cap, so a launch is never uncapped
+    ///         by accident. Pass zero for an unset value; testnets fall back to open defaults.
+    function launchSettings(uint256 chainId, address deployer, address treasury, uint256 cap)
+        public
+        pure
+        returns (LaunchSettings memory)
+    {
+        if (chainId == MEZO_MAINNET) {
+            require(treasury != address(0), "Deploy: mainnet needs JANUS_TREASURY");
+            require(cap != 0, "Deploy: mainnet needs JANUS_DEPOSIT_CAP");
+        }
+        return LaunchSettings({
+            treasury: treasury == address(0) ? deployer : treasury,
+            depositCap: cap == 0 ? type(uint256).max : cap
+        });
     }
 
     /// @notice Mezo contract addresses per chain: 31611 is matsnet, 31612 is mainnet.
@@ -75,7 +105,7 @@ contract Deploy is Script {
             return MezoAddresses({
                 boostVoter: 0x2Ba614a598Cffa5a19d683cDCA97bac3a49313d1,
                 veMezo: 0xb90fdAd3DFD180458D62Cc6acedc983D78E20122,
-                veBtc: 0x7D807e9CE1ef73048FEe9A4214e75e894ea25914,
+                veBtc: 0x3D4b1b884A7a1E59fE8589a3296EC8f8cBB6f279,
                 musd: 0xdD468A1DDc392dcdbEf6db6e34E89AA338F9F186
             });
         }

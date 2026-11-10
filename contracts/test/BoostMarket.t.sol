@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {BoostMarket} from "../src/BoostMarket.sol";
+import {JanusVault} from "../src/JanusVault.sol";
 import {BoostOrders} from "../src/market/BoostOrders.sol";
 import {IVotingEscrow} from "../src/interfaces/IVotingEscrow.sol";
 import {IBoostVoter} from "../src/interfaces/IBoostVoter.sol";
@@ -80,7 +81,7 @@ contract BoostMarketTest is JanusFixture {
         assertEq(_escrow(bobOrder), 80e18);
         assertEq(_escrow(carolOrder), 80e18);
         assertEq(musd.balanceOf(treasury), 4e18);
-        assertEq(vault.claimable(alice), 36e18);
+        assertApproxEqAbs(_streamed(alice), 36e18, 1e7);
         assertEq(uint256(_phase()), uint256(BoostMarket.Phase.Idle));
     }
 
@@ -213,6 +214,7 @@ contract BoostMarketTest is JanusFixture {
         vm.expectEmit(address(market));
         emit BoostMarket.ShardSkipped(1, shard1);
         market.castVotes(type(uint256).max);
+        _pokeIfNeeded();
         market.finalize();
 
         assertEq(_escrow(bobOrder), 100e18);
@@ -222,29 +224,13 @@ contract BoostMarketTest is JanusFixture {
     /// @dev A poke costs 240k to 410k gas on matsnet, so poking every fill would push a
     ///      full round's finalize past the 10M block limit and strand it. Boosts are
     ///      applied afterwards through BoostVoter.pokeBoost, which anyone can call.
-    function test_finalize_chargesWithoutPokingBoosts() public {
-        uint256 bobOrder = _placeOrder(bob, bobNft, 2e15, 5e18, 100e18);
-        _settleOnly();
-        market.castVotes(type(uint256).max);
-        uint256 before = veBtc.locked(bobNft).boost;
-
-        vm.expectCall(address(voter), abi.encodeCall(IBoostVoter.pokeBoost, (bobNft)), 0);
-        vm.expectCall(address(voter), abi.encodeWithSelector(IBoostVoter.pokeBoosts.selector), 0);
-        market.finalize();
-
-        assertEq(_escrow(bobOrder), 80e18);
-        assertEq(vault.claimable(alice), 18e18);
-        assertEq(veBtc.locked(bobNft).boost, before, "finalize leaves the boost alone");
-        assertEq(voter.getBoost(bobNft), 5e18, "a poke would apply 5x");
-    }
-
-    function test_finalize_paysEvenWhenBoostsCannotBePoked() public {
+    function test_finalize_chargesNothingWhenBoostsCannotBePoked() public {
         uint256 bobOrder = _placeOrder(bob, bobNft, 2e15, 5e18, 100e18);
         veBtc.setBooster(address(0xdead));
         _runRound();
 
-        assertEq(_escrow(bobOrder), 80e18);
-        assertEq(vault.claimable(alice), 18e18);
+        assertEq(_escrow(bobOrder), 100e18);
+        assertEq(_streamed(alice), 0);
     }
 
     function test_round_withoutBidsLeavesShardsUnvoted() public {
@@ -256,20 +242,14 @@ contract BoostMarketTest is JanusFixture {
 
     // ---- charging only what was delivered ----
 
-    function test_round_redeemedShardIsNotCharged() public {
-        uint256 bobOrder = _placeOrder(bob, bobNft, 2e15, 5e18, 100e18);
-        uint256 carolOrder = _placeOrder(carol, carolNft, 1e15, 5e18, 100e18);
+    function test_round_aCountedShardCannotLeaveBeforeItVotes() public {
+        _placeOrder(bob, bobNft, 2e15, 5e18, 100e18);
         _settleOnly();
 
         vm.prank(alice);
+        vm.expectRevert(JanusVault.RoundInProgress.selector);
         vault.redeem(shard2);
-        market.castVotes(type(uint256).max);
-        market.finalize();
-
-        assertEq(voter.weights(carolGauge), 0);
-        assertEq(_escrow(carolOrder), 100e18);
-        assertEq(_escrow(bobOrder), 80e18);
-        assertEq(vault.claimable(alice), 18e18);
+        assertTrue(vault.isShard(shard2));
     }
 
     function test_round_gaugeKilledBeforeVotingIsNotCharged() public {
@@ -279,6 +259,7 @@ contract BoostMarketTest is JanusFixture {
 
         voter.killGauge(carolGauge);
         market.castVotes(type(uint256).max);
+        _pokeIfNeeded();
         market.finalize();
 
         assertEq(_escrow(carolOrder), 100e18);
@@ -295,6 +276,7 @@ contract BoostMarketTest is JanusFixture {
         vault.redeem(shard2);
         vault.redeem(shard3);
         vm.stopPrank();
+        _pokeIfNeeded();
         market.finalize();
 
         assertEq(musd.balanceOf(treasury), 20e18);
@@ -302,7 +284,7 @@ contract BoostMarketTest is JanusFixture {
 
     // ---- stalled rounds ----
 
-    function test_finalize_staleRoundChargesOnlyDeliveredVotes() public {
+    function test_finalize_staleRoundChargesNobodyWhoseBoostWasNotApplied() public {
         uint256 bobOrder = _placeOrder(bob, bobNft, 2e15, 5e18, 100e18);
         uint256 carolOrder = _placeOrder(carol, carolNft, 1e15, 5e18, 100e18);
         _settleOnly();
@@ -312,9 +294,10 @@ contract BoostMarketTest is JanusFixture {
         market.finalize();
 
         vm.warp(block.timestamp + market.ROUND_TIMEOUT() + 1);
+        _pokeIfNeeded();
         market.finalize();
 
-        assertEq(_escrow(bobOrder), 80e18);
+        assertEq(_escrow(bobOrder), 100e18);
         assertEq(_escrow(carolOrder), 100e18);
         assertEq(uint256(_phase()), uint256(BoostMarket.Phase.Idle));
     }
@@ -323,6 +306,7 @@ contract BoostMarketTest is JanusFixture {
         _placeOrder(bob, bobNft, 2e15, 5e18, 100e18);
         market.startRound();
         vm.warp(block.timestamp + market.ROUND_TIMEOUT() + 1);
+        _pokeIfNeeded();
         market.finalize();
 
         market.startRound();
@@ -337,6 +321,7 @@ contract BoostMarketTest is JanusFixture {
 
         vm.expectRevert(abi.encodeWithSelector(BoostMarket.RoundExpired.selector, 1));
         market.resetShards(1);
+        _pokeIfNeeded();
         market.finalize();
         assertEq(uint256(_phase()), uint256(BoostMarket.Phase.Idle));
     }
@@ -360,7 +345,7 @@ contract BoostMarketTest is JanusFixture {
         assertEq(voter.weights(house), 20_000e18);
         assertEq(_escrow(daveOrder), 50e18);
         assertEq(_escrow(bobOrder), 80e18);
-        assertEq(vault.claimable(alice), 36e18 + 135e18);
+        assertApproxEqAbs(_streamed(alice), 36e18 + 135e18, 1e7);
     }
 
     function test_round_nextEpochResetsAndResells() public {
@@ -387,7 +372,7 @@ contract BoostMarketTest is JanusFixture {
         _applyBoosts();
         assertEq(_escrow(bobOrder), 0);
         assertEq(veBtc.locked(bobNft).boost, 5e18, "paid for this epoch");
-        uint256 paid = vault.claimable(alice);
+        uint256 paid = _streamed(alice);
 
         vm.warp(EPOCH + 7 days + 2 hours);
         assertEq(voter.weights(bobGauge), 10_000e18, "votes carried into the new epoch");
@@ -400,7 +385,7 @@ contract BoostMarketTest is JanusFixture {
 
         voter.pokeBoost(bobNft);
         assertEq(veBtc.locked(bobNft).boost, 1e18);
-        assertEq(vault.claimable(alice), paid);
+        assertApproxEqAbs(_streamed(alice), paid, 1e7);
     }
 
     function test_castVotes_runsInBatches() public {
@@ -412,10 +397,11 @@ contract BoostMarketTest is JanusFixture {
         market.castVotes(1);
         assertEq(uint256(_phase()), uint256(BoostMarket.Phase.Voting));
         market.castVotes(5);
-        assertEq(uint256(_phase()), uint256(BoostMarket.Phase.Voted));
+        assertEq(uint256(_phase()), uint256(BoostMarket.Phase.Poking));
         assertEq(voter.weights(daveGauge), 50_000e18);
         assertEq(voter.weights(house), 10_000e18);
 
+        _pokeIfNeeded();
         market.finalize();
         assertEq(uint256(_phase()), uint256(BoostMarket.Phase.Idle));
     }
@@ -435,6 +421,7 @@ contract BoostMarketTest is JanusFixture {
         market.cancelOrder(daveOrder);
 
         market.castVotes(type(uint256).max);
+        _pokeIfNeeded();
         market.finalize();
         vm.prank(bob);
         market.cancelOrder(bobOrder);

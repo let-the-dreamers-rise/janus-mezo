@@ -14,7 +14,7 @@ import {Epochs} from "../../src/libraries/Epochs.sol";
 
 /// @notice Runs Janus against the live Mezo matsnet contracts on a fork: real veMEZO, veBTC,
 ///         BoostVoter and MUSD, using real NFTs by pranking their owners.
-/// @dev Opt in with FORK_MATSNET=true and run with --isolate, so every top-level call is its
+/// @dev Opt in with FOUNDRY_PROFILE=fork FORK_MATSNET=true and run with --isolate, so every top-level call is its
 ///      own transaction with cold storage, metered as matsnet would charge it. The NFTs come
 ///      from test/fork/data/matsnet-nfts.json (keeper: pnpm scan:nfts), which also pins the
 ///      fork block so runs are reproducible and Foundry can cache the RPC reads.
@@ -111,16 +111,17 @@ contract MatsnetForkTest is Test {
 
         market.settle();
         market.castVotes(10);
-        uint256 appliedBefore = VE_BTC.locked(buyerNft).boost;
+        market.pokeFills(10);
+        assertTrue(market.boostApplied(1, orderId), "poke landed on the real voter");
         market.finalize();
-        assertEq(VE_BTC.locked(buyerNft).boost, appliedBefore, "finalize does not poke");
 
         (, uint256 filled,, uint256 charged) = market.fills(1, orderId);
         assertEq(filled, expectedFill, "fill");
         assertEq(VOTER.weights(buyerGauge), base + filled, "gauge weight");
         assertEq(charged, Math.mulDiv(filled, PRICE, 1e18, Math.Rounding.Ceil), "charge");
         assertEq(market.getOrder(orderId).escrow, escrowBefore - charged, "escrow");
-        assertApproxEqAbs(vault.claimable(depositor), charged - (charged * 1_000) / 10_000, 1);
+        skip(vault.REWARD_DURATION());
+        assertApproxEqRel(vault.claimable(depositor), charged - (charged * 1_000) / 10_000, 1e12);
 
         uint256 predicted = BoostMath.boostOf(
             VE_MEZO.totalVotingPower(),
@@ -129,8 +130,7 @@ contract MatsnetForkTest is Test {
             VOTER.weights(buyerGauge)
         );
         assertEq(VOTER.getBoost(buyerNft), predicted, "BoostMath mirrors BoostVoter");
-        VOTER.pokeBoost(buyerNft);
-        assertEq(VE_BTC.locked(buyerNft).boost, predicted, "the keeper's poke applies the boost");
+        assertEq(VE_BTC.locked(buyerNft).boost, predicted, "pokeFills applied the boost");
         console2.log("filled votes", filled, "boost after round", predicted);
     }
 
@@ -194,6 +194,10 @@ contract MatsnetForkTest is Test {
         while (_phase() == BoostMarket.Phase.Voting) {
             market.castVotes(5);
             _meter("castVotes(5)");
+        }
+        while (_phase() == BoostMarket.Phase.Poking) {
+            market.pokeFills(5);
+            _meter("pokeFills(5)");
         }
         market.finalize();
         _meter("finalize");

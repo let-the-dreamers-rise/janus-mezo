@@ -5,6 +5,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC20Errors} from "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {JanusVault} from "../src/JanusVault.sol";
+import {JanusRewards} from "../src/vault/JanusRewards.sol";
 import {IVotingEscrow} from "../src/interfaces/IVotingEscrow.sol";
 import {IBoostVoter} from "../src/interfaces/IBoostVoter.sol";
 import {MockVotingEscrow} from "./mocks/MockVotingEscrow.sol";
@@ -16,6 +17,7 @@ contract JanusVaultTest is JanusFixture {
         vm.startPrank(address(market));
         musd.approve(address(vault), amount);
         vault.notifyReward(amount);
+        skip(vault.REWARD_DURATION());
         vm.stopPrank();
     }
 
@@ -44,7 +46,7 @@ contract JanusVaultTest is JanusFixture {
     }
 
     function test_constructor_rejectsZeroAddresses() public {
-        vm.expectRevert(JanusVault.ZeroAddress.selector);
+        vm.expectRevert(JanusRewards.ZeroAddress.selector);
         new JanusVault(IVotingEscrow(address(0)), IBoostVoter(address(voter)), IERC20(address(musd)), owner, 1e18);
     }
 
@@ -195,8 +197,8 @@ contract JanusVaultTest is JanusFixture {
         _depositShard(alice, 3_000e18);
         _depositShard(bob, 1_000e18);
         _notify(400e18);
-        assertEq(vault.claimable(alice), 300e18);
-        assertEq(vault.claimable(bob), 100e18);
+        assertApproxEqAbs(vault.claimable(alice), 300e18, 1e7);
+        assertApproxEqAbs(vault.claimable(bob), 100e18, 1e7);
         assertEq(vault.totalRewards(), 400e18);
     }
 
@@ -206,16 +208,16 @@ contract JanusVaultTest is JanusFixture {
         vm.prank(alice);
         assertTrue(vault.transfer(bob, 500e18));
         _notify(100e18);
-        assertEq(vault.claimable(alice), 150e18);
-        assertEq(vault.claimable(bob), 50e18);
+        assertApproxEqAbs(vault.claimable(alice), 150e18, 1e7);
+        assertApproxEqAbs(vault.claimable(bob), 50e18, 1e7);
     }
 
     function test_rewards_lateDepositorEarnsNothingFromThePast() public {
         _depositShard(alice, 1_000e18);
         _notify(100e18);
         _depositShard(bob, 1_000e18);
-        assertEq(vault.claimable(bob), 0);
-        assertEq(vault.claimable(alice), 100e18);
+        assertApproxEqAbs(vault.claimable(bob), 0, 1e7);
+        assertApproxEqAbs(vault.claimable(alice), 100e18, 1e7);
     }
 
     function test_rewards_surviveRedemption() public {
@@ -224,18 +226,18 @@ contract JanusVaultTest is JanusFixture {
         _notify(100e18);
         vm.prank(alice);
         vault.redeem(id);
-        assertEq(vault.claimable(alice), 50e18);
+        assertApproxEqAbs(vault.claimable(alice), 50e18, 1e7);
     }
 
     function test_claim_paysOnce() public {
         _depositShard(alice, 1_000e18);
         _notify(100e18);
         vm.prank(alice);
-        assertEq(vault.claim(), 100e18);
-        assertEq(musd.balanceOf(alice), 100e18);
+        assertApproxEqAbs(vault.claim(), 100e18, 1e7);
+        assertApproxEqAbs(musd.balanceOf(alice), 100e18, 1e7);
         vm.prank(alice);
         assertEq(vault.claim(), 0);
-        assertEq(vault.claimable(alice), 0);
+        assertApproxEqAbs(vault.claimable(alice), 0, 1e7);
     }
 
     function test_notifyReward_onlyMarket() public {
@@ -348,7 +350,7 @@ contract JanusVaultTest is JanusFixture {
         vault.setMarket(alice);
 
         vm.prank(owner);
-        vm.expectRevert(JanusVault.ZeroAddress.selector);
+        vm.expectRevert(JanusRewards.ZeroAddress.selector);
         vault.setMarket(address(0));
     }
 

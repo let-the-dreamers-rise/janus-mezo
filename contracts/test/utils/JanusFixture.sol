@@ -110,8 +110,21 @@ abstract contract JanusFixture is Test {
         market.resetShards(type(uint256).max);
         market.settle();
         market.castVotes(type(uint256).max);
+        _pokeIfNeeded();
         market.finalize();
         vm.stopPrank();
+    }
+
+    /// @dev What `who` can claim once the current stream has fully paid out.
+    function _streamed(address who) internal returns (uint256 amount) {
+        uint256 state = vm.snapshotState();
+        skip(vault.REWARD_DURATION());
+        amount = vault.claimable(who);
+        vm.revertToState(state);
+    }
+
+    function _pokeIfNeeded() internal {
+        if (_phase() == BoostMarket.Phase.Poking) market.pokeFills(type(uint256).max);
     }
 
     function _phase() internal view returns (BoostMarket.Phase) {

@@ -39,6 +39,7 @@ exclude_lints = ["block-timestamp"]
 
 [rpc_endpoints]
 matsnet = "https://rpc.test.mezo.org"
+mezo = "https://rpc-http.mezo.boar.network"
 
 [fmt]
 line_length = 100

@@ -9,6 +9,7 @@ import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet
 import {IVotingEscrow} from "./interfaces/IVotingEscrow.sol";
 import {IBoostVoter} from "./interfaces/IBoostVoter.sol";
 import {IJanusVault} from "./interfaces/IJanusVault.sol";
+import {IShardLock} from "./interfaces/IShardLock.sol";
 import {BoostMath} from "./libraries/BoostMath.sol";
 import {Epochs} from "./libraries/Epochs.sol";
 import {OrderSort} from "./libraries/OrderSort.sol";
@@ -23,13 +24,14 @@ import {BoostOrders} from "./market/BoostOrders.sol";
 ///         3. settle       price every order with the exact BoostVoter formula and fill
 ///                         the highest bids first
 ///         4. castVotes    vote each shard's slice of the allocation
-///         5. finalize     charge each buyer only for votes delivered to its gauge, and
+///         5. pokeFills    apply the new boost to every filled veBTC NFT, in batches
+///         6. finalize     charge each buyer only for votes delivered to its gauge, and
 ///                         pay jMEZO holders and the treasury
-///         Every step is permissionless, so any keeper can drive a round. finalize does
-///         not poke boosts: a poke costs 240k to 410k gas on matsnet, and poking every
-///         fill could push a full round past the block gas limit and strand it. Boosts
-///         are applied afterwards with BoostVoter.pokeBoost, which anyone can call.
-contract BoostMarket is BoostOrders {
+///         Every step is permissionless, so any keeper can drive a round. A round cannot
+///         close normally until every fill has been poked, so a buyer always gets the
+///         boost it paid for. Steps that use try/catch require enough gas up front,
+///         because a caller could otherwise starve an inner call to make it fail quietly.
+contract BoostMarket is BoostOrders, IShardLock {
     using SafeERC20 for IERC20;
     using SafeCast for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
@@ -39,6 +41,7 @@ contract BoostMarket is BoostOrders {
         Resetting,
         Ready,
         Voting,
+        Poking,
         Voted
     }
 
@@ -83,6 +86,13 @@ contract BoostMarket is BoostOrders {
     uint256 public constant MAX_FEE_BPS = 2_000;
     /// @notice After this long anyone may close a stuck round; undelivered votes cost nothing.
     uint256 public constant ROUND_TIMEOUT = 12 hours;
+    /// @dev Gas each try/catch needs: a cold poke measured 417k on mainnet, and a reset
+    ///      costs more for every gauge the shard voted for last time.
+    uint256 internal constant MIN_RESET_GAS = 400_000;
+    uint256 internal constant MIN_RESET_GAS_PER_GAUGE = 40_000;
+    uint256 internal constant MIN_POKE_GAS = 800_000;
+    uint256 internal constant MIN_VOTE_GAS = 400_000;
+    uint256 internal constant MIN_VOTE_GAS_PER_GAUGE = 150_000;
 
     IJanusVault public immutable vault;
     IVotingEscrow public immutable veMezo;
@@ -101,6 +111,8 @@ contract BoostMarket is BoostOrders {
     mapping(uint256 id => uint256[]) internal _roundOrders;
     mapping(uint256 id => mapping(uint256 orderId => Fill)) public fills;
     mapping(uint256 id => mapping(address gauge => uint256 votes)) public delivered;
+    /// @notice Whether a fill's boost was applied by pokeFills.
+    mapping(uint256 id => mapping(uint256 orderId => bool)) public boostApplied;
 
     event RoundStarted(uint256 indexed roundId, uint256 epoch, uint256 shards);
     event ShardsReset(uint256 indexed roundId, uint256 cursor, uint256 total);
@@ -117,6 +129,8 @@ contract BoostMarket is BoostOrders {
     event OrderCharged(
         uint256 indexed roundId, uint256 indexed orderId, uint256 votes, uint256 amount
     );
+    event BoostPoked(uint256 indexed roundId, uint256 indexed orderId, uint256 indexed tokenId);
+    event BoostPokeFailed(uint256 indexed roundId, uint256 indexed orderId);
     event RoundFinalized(uint256 indexed roundId, uint256 charged, uint256 toHolders, uint256 fee);
     event TreasurySet(address indexed treasury);
     event FeeSet(uint256 feeBps);
@@ -133,6 +147,7 @@ contract BoostMarket is BoostOrders {
     error RoundExpired(uint256 roundId);
     error NoActiveRound();
     error RoundNotComplete(uint256 roundId);
+    error InsufficientGas();
 
     constructor(Config memory config)
         BoostOrders(
@@ -195,8 +210,10 @@ contract BoostMarket is BoostOrders {
         uint256[] storage powers = _roundPowers[id];
         uint256 end = _batchEnd(r.cursor, maxCount, shards.length);
         uint256 added;
+        uint256 minGas = MIN_RESET_GAS + MIN_RESET_GAS_PER_GAUGE * boostVoter.maxVotingNum();
         for (uint256 i = r.cursor; i < end; i++) {
             uint256 tokenId = shards[i];
+            _requireGas(minGas);
             _resetShard(id, tokenId);
             uint256 power = _usablePower(tokenId, r.epoch);
             powers.push(power);
@@ -232,20 +249,39 @@ contract BoostMarket is BoostOrders {
         VoteSplitter.ShardPlan[] memory plans = _plans(id, r.fallbackGauge, r.maxGauges);
         uint256 end = _batchEnd(r.cursor, maxCount, shards.length);
         for (uint256 i = r.cursor; i < end; i++) {
+            _requireGas(MIN_VOTE_GAS + MIN_VOTE_GAS_PER_GAUGE * plans[i].gauges.length);
             _castShard(id, shards[i], plans[i]);
         }
-        _advance(r, end, shards.length, Phase.Voted);
+        _advance(r, end, shards.length, _roundOrders[id].length == 0 ? Phase.Voted : Phase.Poking);
         emit VotesCast(id, end, shards.length);
+    }
+
+    /// @notice Applies the new boost to up to `maxCount` filled veBTC NFTs. A poke that
+    ///         reverts is logged and skipped, so one bad NFT cannot strand the round; anyone
+    ///         can retry it directly on BoostVoter.
+    function pokeFills(uint256 maxCount) external nonReentrant {
+        Round storage r = _round;
+        if (r.phase != Phase.Poking) revert WrongPhase(Phase.Poking, r.phase);
+        uint256 id = roundId;
+        uint256[] storage orderIds = _roundOrders[id];
+        uint256 end = _batchEnd(r.cursor, maxCount, orderIds.length);
+        for (uint256 i = r.cursor; i < end; i++) {
+            _requireGas(MIN_POKE_GAS);
+            _pokeFill(id, orderIds[i]);
+        }
+        _advance(r, end, orderIds.length, Phase.Voted);
     }
 
     /// @notice Closes the round: charges delivered votes and pays out revenue.
     ///         A round that stalls past ROUND_TIMEOUT or the epoch's vote window can be
-    ///         closed by anyone, and only votes that actually landed are charged.
+    ///         closed by anyone. A buyer pays only once its boost has been applied.
     function finalize() external nonReentrant {
         Round storage r = _round;
         Phase phase = r.phase;
         if (phase == Phase.Idle) revert NoActiveRound();
-        if (phase != Phase.Voted && !_isStale(r)) revert RoundNotComplete(roundId);
+        // Pokes have no vote window, so a closed window is no reason to skip them.
+        bool closable = phase == Phase.Voted || (phase == Phase.Poking ? _timedOut(r) : _isStale(r));
+        if (!closable) revert RoundNotComplete(roundId);
 
         uint256 id = roundId;
         r.phase = Phase.Idle;
@@ -258,6 +294,12 @@ contract BoostMarket is BoostOrders {
     // ------------------------------------------------------------------
     // Views
     // ------------------------------------------------------------------
+
+    /// @inheritdoc IShardLock
+    function shardsLocked() external view returns (bool) {
+        Phase phase = _round.phase;
+        return phase != Phase.Idle && phase <= Phase.Voting;
+    }
 
     function currentRound() external view returns (uint256 id, Round memory info) {
         return (roundId, _round);
@@ -426,6 +468,20 @@ contract BoostMarket is BoostOrders {
         }
     }
 
+    function _pokeFill(uint256 id, uint256 orderId) private {
+        uint256 tokenId = _orders[orderId].tokenId;
+        try boostVoter.pokeBoost(tokenId) {
+            boostApplied[id][orderId] = true;
+            emit BoostPoked(id, orderId, tokenId);
+        } catch {
+            emit BoostPokeFailed(id, orderId);
+        }
+    }
+
+    function _requireGas(uint256 needed) private view {
+        if (gasleft() < needed) revert InsufficientGas();
+    }
+
     /// @dev Drops gauges killed since settlement; BoostVoter would reject the whole vote.
     function _liveOnly(VoteSplitter.ShardPlan memory plan)
         private
@@ -464,7 +520,7 @@ contract BoostMarket is BoostOrders {
     function _chargeFill(uint256 id, uint256 orderId) private returns (uint256 charge) {
         Fill storage f = fills[id][orderId];
         Order storage order = _orders[orderId];
-        uint256 votes = Math.min(f.votes, delivered[id][f.gauge]);
+        uint256 votes = boostApplied[id][orderId] ? Math.min(f.votes, delivered[id][f.gauge]) : 0;
         charge = Math.min(
             order.escrow, Math.mulDiv(votes, f.pricePerVote, VOTE_UNIT, Math.Rounding.Ceil)
         );
@@ -519,8 +575,11 @@ contract BoostMarket is BoostOrders {
     }
 
     function _isStale(Round storage r) private view returns (bool) {
-        return block.timestamp > Epochs.voteEnd(r.epoch)
-            || block.timestamp > uint256(r.startedAt) + ROUND_TIMEOUT;
+        return block.timestamp > Epochs.voteEnd(r.epoch) || _timedOut(r);
+    }
+
+    function _timedOut(Round storage r) private view returns (bool) {
+        return block.timestamp > uint256(r.startedAt) + ROUND_TIMEOUT;
     }
 
     function _liveFallback() private view returns (address) {
@@ -531,6 +590,6 @@ contract BoostMarket is BoostOrders {
 
     function _isLocked(uint256 orderId) internal view override returns (bool) {
         Phase phase = _round.phase;
-        return (phase == Phase.Voting || phase == Phase.Voted) && fills[roundId][orderId].votes > 0;
+        return phase >= Phase.Voting && fills[roundId][orderId].votes > 0;
     }
 }

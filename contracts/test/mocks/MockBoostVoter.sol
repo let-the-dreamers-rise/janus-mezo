@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {MockVotingEscrow} from "./MockVotingEscrow.sol";
 
 /// @notice Test double for Mezo's BoostVoter. vote, reset and the boost formula are
@@ -35,6 +36,8 @@ contract MockBoostVoter {
     mapping(address => bool) public isAlive;
     mapping(uint256 => address) public boostableTokenIdToGauge;
     uint256 internal _gaugeNonce;
+    mapping(uint256 => bool) public pokeReverts;
+    mapping(address => uint256) public pendingBribe;
 
     constructor(address ve_, address boostableVe_) {
         ve = ve_;
@@ -66,7 +69,27 @@ contract MockBoostVoter {
         maxVotingNum = maxVotingNum_;
     }
 
+    function setPokeReverts(uint256 boostableTokenId, bool reverts) external {
+        pokeReverts[boostableTokenId] = reverts;
+    }
+
+    /// @dev Bribes earned by voters; tokens must already sit in this mock.
+    function seedBribe(address token, uint256 amount) external {
+        pendingBribe[token] += amount;
+    }
+
     // ---- BoostVoter surface ----
+
+    function claimBribes(address[] calldata, address[][] calldata tokens, uint256 tokenId) external {
+        if (!MockVotingEscrow(ve).isApprovedOrOwner(msg.sender, tokenId)) revert NotApprovedOrOwner();
+        for (uint256 i = 0; i < tokens.length; i++) {
+            for (uint256 j = 0; j < tokens[i].length; j++) {
+                uint256 amount = pendingBribe[tokens[i][j]];
+                pendingBribe[tokens[i][j]] = 0;
+                IERC20(tokens[i][j]).transfer(msg.sender, amount);
+            }
+        }
+    }
 
     function createBoostGauge(address, uint256 boostableTokenId, address[] calldata, uint256[] calldata)
         external
@@ -119,6 +142,7 @@ contract MockBoostVoter {
     }
 
     function pokeBoost(uint256 boostableTokenId) public {
+        if (pokeReverts[boostableTokenId]) revert NotApprovedOrOwner();
         MockVotingEscrow(boostableVe).updateBoost(boostableTokenId, getBoost(boostableTokenId));
     }
 
