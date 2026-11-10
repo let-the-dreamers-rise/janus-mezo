@@ -59,7 +59,9 @@ function encodeStep(kind: "startRound" | "settle" | "finalize"): Hex {
   return encodeFunctionData({ abi: boostMarketAbi, functionName: kind });
 }
 
-function encodeBatch(kind: "resetShards" | "castVotes", size: bigint): Hex {
+type BatchKind = "resetShards" | "castVotes" | "pokeFills";
+
+function encodeBatch(kind: BatchKind, size: bigint): Hex {
   return encodeFunctionData({ abi: boostMarketAbi, functionName: kind, args: [size] });
 }
 
@@ -71,9 +73,9 @@ async function estimate(keeper: Keeper, to: Address, data: Hex): Promise<bigint 
   }
 }
 
-/// Sends resetShards or castVotes with the largest batch whose gas fits the budget. If no
-/// size fits, a batch of one is sent anyway so the revert reason reaches the log.
-async function sendBatch(keeper: Keeper, kind: "resetShards" | "castVotes"): Promise<void> {
+/// Sends a batched step with the largest batch whose gas fits the budget. If no size fits,
+/// a batch of one is sent anyway so the revert reason reaches the log.
+async function sendBatch(keeper: Keeper, kind: BatchKind): Promise<void> {
   const market = keeper.contracts.market;
   const fit = await fitBatch(keeper.batchSize, keeper.gasBudget, (size) =>
     estimate(keeper, market, encodeBatch(kind, size)),
@@ -86,6 +88,7 @@ async function act(keeper: Keeper, action: Action): Promise<void> {
   switch (action.kind) {
     case "resetShards":
     case "castVotes":
+    case "pokeFills":
       return sendBatch(keeper, action.kind);
     case "startRound":
     case "settle":

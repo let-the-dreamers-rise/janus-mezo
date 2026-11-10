@@ -1,5 +1,5 @@
-/// Janus keeper: drives BoostMarket rounds on matsnet. Every call it makes is
-/// permissionless, so anyone can run this with any funded key.
+/// Janus keeper: drives BoostMarket rounds on the network named by JANUS_NETWORK (matsnet by
+/// default). Every call it makes is permissionless, so anyone can run this with any funded key.
 /// Usage: pnpm start            run until the market rests, then exit
 ///        pnpm watch            keep running, checking every KEEPER_INTERVAL_SECONDS
 import { config as loadEnv } from "dotenv";
@@ -7,8 +7,8 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createPublicClient, createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { MATSNET_CHAIN_ID, mezoMatsnet } from "./config/chain.js";
 import { loadDeployment } from "./config/deployment.js";
+import { selectNetwork } from "./config/networks.js";
 import { drive, type Keeper, type Logger } from "./round.js";
 import { loadSignerKey } from "./config/env.js";
 
@@ -38,12 +38,13 @@ async function main(): Promise<void> {
   // Every send pads its estimate by half again, capped at 9.5M of the 10M block, so a batch
   // estimated at the 6M default still goes out with its full margin.
   const gasBudget = BigInt(positiveInteger("KEEPER_GAS_BUDGET", 6_000_000));
-  const deployment = loadDeployment(MATSNET_CHAIN_ID);
+  const { chain } = selectNetwork(process.env.JANUS_NETWORK);
+  const deployment = loadDeployment(chain.id);
   const account = privateKeyToAccount(loadSignerKey(["KEEPER_PRIVATE_KEY", "DEPLOYER_PRIVATE_KEY"]));
 
   const keeper: Keeper = {
-    publicClient: createPublicClient({ chain: mezoMatsnet, transport: http() }),
-    walletClient: createWalletClient({ account, chain: mezoMatsnet, transport: http() }),
+    publicClient: createPublicClient({ chain, transport: http() }),
+    walletClient: createWalletClient({ account, chain, transport: http() }),
     contracts: {
       vault: deployment.vault,
       market: deployment.market,

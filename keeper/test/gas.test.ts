@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { BLOCK_GAS_LIMIT, MAX_TX_GAS, gasWithHeadroom, likelyOutOfGas } from "../src/lib/gas.js";
+import { BLOCK_GAS_LIMIT, MAX_TX_GAS, MIN_TX_GAS, gasWithHeadroom, likelyOutOfGas } from "../src/lib/gas.js";
 
 describe("gasWithHeadroom", () => {
+  it("never trusts an estimate below the floor, since Mezo's can be far too low", () => {
+    expect(gasWithHeadroom(31_000n)).toBe(MIN_TX_GAS);
+    expect(MIN_TX_GAS).toBeGreaterThanOrEqual(400_000n);
+  });
+
   it("adds half again to the estimate", () => {
     expect(gasWithHeadroom(545_366n)).toBe(818_049n);
   });

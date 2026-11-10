@@ -52,7 +52,12 @@ describe("nextAction", () => {
     expect(nextAction(open(PHASE.Resetting), inWindow, ready)).toEqual({ kind: "resetShards" });
     expect(nextAction(open(PHASE.Ready), inWindow, ready)).toEqual({ kind: "settle" });
     expect(nextAction(open(PHASE.Voting), inWindow, ready)).toEqual({ kind: "castVotes" });
+    expect(nextAction(open(PHASE.Poking), inWindow, ready)).toEqual({ kind: "pokeFills" });
     expect(nextAction(open(PHASE.Voted), inWindow, ready)).toEqual({ kind: "finalize", stale: false });
+  });
+
+  it("pokes filled buyers even after the round would count as stale", () => {
+    expect(nextAction(open(PHASE.Poking), inWindow + TIMEOUT + 1n, ready)).toEqual({ kind: "pokeFills" });
   });
 
   it("closes a round that outlived the timeout or its epoch", () => {
