@@ -9,8 +9,7 @@ async function load(network: string | undefined) {
   const deployment = await import("./deployment");
   const contracts = await import("@/lib/chain/contracts");
   const site = await import("./site");
-  const evidence = await import("@/lib/proof/evidence");
-  return { ...deployment, ...contracts, SITE: site.SITE, proofHref: evidence.proofHref };
+  return { ...deployment, ...contracts, SITE: site.SITE };
 }
 
 afterEach(() => {
@@ -35,10 +34,9 @@ describe("a mainnet build", () => {
     else expect(build.IS_DEPLOYED).toBe(true);
   });
 
-  it("links the site to the mainnet explorer but keeps testnet evidence on the testnet explorer", async () => {
+  it("links the site to the mainnet explorer", async () => {
     const build = await load("mainnet");
     expect(build.SITE.explorerUrl).toBe("https://explorer.mezo.org");
-    expect(build.proofHref({ label: "x", kind: "tx", value: "0xabc" })).toBe("https://explorer.test.mezo.org/tx/0xabc");
   });
 });
 

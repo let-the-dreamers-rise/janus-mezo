@@ -57,7 +57,7 @@ export function DepositList({ account }: { readonly account: AccountSnapshot }) 
   if (account.veMezo.length === 0) {
     return (
       <EmptyState icon={Lock} title="No veMEZO NFTs in this account">
-        Lock MEZO in Mezo&apos;s veMEZO to get one. Every lock of at least 1 MEZO can join the vault.
+        Lock MEZO in Mezo&apos;s veMEZO to get one. Every lock above the vault minimum can join the vault.
       </EmptyState>
     );
   }

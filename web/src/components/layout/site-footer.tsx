@@ -26,6 +26,12 @@ export function SiteFooter() {
               Source code
             </a>{" "}
             <a
+              href="/transparency/"
+              className="rounded-sm text-foreground underline underline-offset-4 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Transparency
+            </a>{" "}
+            <a
               href={NETWORK_INFO.twin.url}
               className="rounded-sm text-foreground underline underline-offset-4 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >

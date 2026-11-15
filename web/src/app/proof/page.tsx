@@ -1,8 +1,6 @@
-import type { Metadata } from "next";
-import { ProofView } from "@/components/proof/proof-view";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = { title: "Proof" };
-
+/// The evidence page became /transparency once Janus launched on mainnet.
 export default function ProofPage() {
-  return <ProofView />;
+  redirect("/transparency/");
 }
