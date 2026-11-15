@@ -70,6 +70,16 @@ export const SECTIONS: readonly FactSection[] = [
         ],
       },
       {
+        title: "First outside tester",
+        detail: "On 15 November an outside tester used the Matsnet app end to end: created a boost gauge, placed a bid, bought jMEZO in the pool and claimed MUSD as a holder. Their bid joins the next round.",
+        links: [
+          { label: "Tester wallet", kind: "matsnet-address", value: "0x64195E080a502653712eB010803f29A1DdC5d98D" },
+          { label: "Bid", kind: "matsnet-tx", value: "0x5b7455f49c87f466b4a834013b32264dcca0a27ea9632317c5d014fdffedd4ef" },
+          { label: "Bought jMEZO", kind: "matsnet-tx", value: "0x8bb4115bd8d6ef2452fd2818d63ac7f7d3f3db13b1d12b3a719d8f491ab0fc33" },
+          { label: "Claimed MUSD", kind: "matsnet-tx", value: "0x00309de7c3782d2f045a0978e1d2c94b7a407ea3fa3646a6ab3835aec8575a0f" },
+        ],
+      },
+      {
         title: "Rounds run on a schedule",
         detail: "A GitHub Actions job drives every round every 4 hours with a gas-only keeper wallet that owns nothing. Fill rate, price per vote and holder income are on the market page.",
         links: [{ label: "keeper.yml", kind: "code", value: ".github/workflows/keeper.yml" }],
