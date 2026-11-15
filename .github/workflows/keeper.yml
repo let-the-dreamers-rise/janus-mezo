@@ -1,0 +1,54 @@
+name: keeper
+
+# Drives Janus rounds without manual steps. Every step of a round is permissionless, so this
+# job uses a gas-only keeper wallet (KEEPER_PRIVATE_KEY) that owns nothing. It never holds
+# the contract owner key.
+on:
+  schedule:
+    - cron: "17 */4 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: keeper
+  cancel-in-progress: false
+
+jobs:
+  round:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        # Mainnet joins once its keeper wallet is funded.
+        network: [matsnet]
+    defaults:
+      run:
+        working-directory: keeper
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: keeper/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      # Mezo sometimes reverts a step that passed simulation; a fresh run picks up where the
+      # last one stopped, so three attempts finish a round.
+      - name: Drive the round
+        env:
+          JANUS_NETWORK: ${{ matrix.network }}
+          KEEPER_PRIVATE_KEY: ${{ secrets.KEEPER_PRIVATE_KEY }}
+        run: |
+          if [ -z "$KEEPER_PRIVATE_KEY" ]; then
+            echo "KEEPER_PRIVATE_KEY is not set; skipping"
+            exit 0
+          fi
+          for attempt in 1 2 3; do
+            if pnpm start; then exit 0; fi
+            echo "attempt $attempt failed, retrying"
+            sleep 10
+          done
+          exit 1

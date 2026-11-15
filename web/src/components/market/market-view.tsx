@@ -10,6 +10,7 @@ import { useWalletAccount } from "@/lib/wallet/passport";
 import { ActivityLog } from "./activity-log";
 import { LastRound } from "./last-round";
 import { OrderBook } from "./order-book";
+import { RoundAnalytics } from "./round-analytics";
 import { RoundHistory } from "./round-history";
 import { RoundPanel } from "./round-panel";
 
@@ -44,6 +45,12 @@ function Content() {
           Order book
         </h2>
         <OrderBook snapshot={data} account={accountAddress} />
+      </section>
+      <section aria-labelledby="analytics-title" className="space-y-3">
+        <h2 id="analytics-title" className="text-lg font-semibold">
+          Round analytics
+        </h2>
+        <RoundAnalytics />
       </section>
       <section aria-labelledby="history-title" className="space-y-3">
         <h2 id="history-title" className="text-lg font-semibold">

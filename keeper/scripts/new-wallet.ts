@@ -1,10 +1,11 @@
 // Creates a throwaway testnet key in the repo-root .env (never printed) and prints its address.
-// Usage: pnpm wallet:new [ROLE]   ROLE is DEPLOYER (default) or FAUCET, the starter-kit wallet.
+// Usage: pnpm wallet:new [ROLE]   ROLE is DEPLOYER (default), FAUCET (the starter-kit wallet)
+//        or KEEPER (a gas-only wallet that drives rounds and never owns a contract).
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
-const ROLES = ["DEPLOYER", "FAUCET"] as const;
+const ROLES = ["DEPLOYER", "FAUCET", "KEEPER"] as const;
 const role = (process.argv[2] ?? "DEPLOYER").toUpperCase();
 if (!ROLES.includes(role as (typeof ROLES)[number])) {
   throw new Error(`Unknown role ${role}. Use one of ${ROLES.join(", ")}.`);
