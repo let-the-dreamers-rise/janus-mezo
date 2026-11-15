@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Janus: the boost market for Mezo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=block" rel="stylesheet">
+<style>
+:root{
+  --ink:#0E0D0C; --ink2:#161412; --card:#1C1916; --line:#2E2A25;
+  --text:#EFE8DC; --mute:#A89F92; --bronze:#D6A352; --bronze2:#8F5E1E;
+  --patina:#64B9A2; --patina2:#1F6B5A; --paper:#F6F1E7; --paperInk:#1A1714;
+}
+@page{size:1920px 1080px;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--ink)}
+body{font-family:Inter,system-ui,sans-serif;color:var(--text);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.slide{width:1920px;height:1080px;position:relative;overflow:hidden;padding:120px 128px 150px;background:var(--ink);page-break-after:always;break-after:page;display:flex;flex-direction:column}
+.slide:last-child{page-break-after:auto;break-after:auto}
+.slide.glow{background-color:var(--ink);background-image:radial-gradient(900px 600px at 85% 15%,rgba(214,163,82,.16),rgba(214,163,82,0) 70%),radial-gradient(800px 600px at 10% 95%,rgba(100,185,162,.12),rgba(100,185,162,0) 70%);background-repeat:no-repeat}
+.paper{background:var(--paper);color:var(--paperInk)}
+.paper .mute{color:#5E564C}
+.kicker{font-family:"JetBrains Mono",monospace;font-size:24px;letter-spacing:.18em;text-transform:uppercase;color:var(--bronze);margin-bottom:28px;position:relative}
+.paper .kicker{color:var(--bronze2)}
+h1{font-family:"Instrument Serif",serif;font-weight:400;font-size:168px;line-height:.95;letter-spacing:-.01em;position:relative}
+h2{font-family:"Instrument Serif",serif;font-weight:400;font-size:88px;line-height:1.02;letter-spacing:-.005em;max-width:1500px;position:relative}
+h2 i,h1 i{color:var(--bronze)}
+.paper h2 i{color:var(--bronze2)}
+h3{font-size:34px;font-weight:600;line-height:1.2;margin-bottom:14px}
+p,li{font-size:30px;line-height:1.45}
+.mute{color:var(--mute)}
+.lead{font-size:38px;line-height:1.4;max-width:1300px}
+.mono{font-family:"JetBrains Mono",monospace}
+.row{display:flex;gap:32px}
+.grow{flex:1}
+.spacer{flex:1}
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:44px}
+.paper .card{background:#FFFDF8;border-color:#E2D9C9}
+.footer{position:absolute;left:128px;right:128px;bottom:56px;display:flex;justify-content:space-between;align-items:center;font-family:"JetBrains Mono",monospace;font-size:22px;color:var(--mute)}
+.paper .footer{color:#7A7064}
+.footer .brand{display:flex;align-items:center;gap:14px;font-family:"Instrument Serif",serif;font-size:30px;color:var(--text)}
+.paper .footer .brand{color:var(--paperInk)}
+.pill{display:inline-flex;align-items:center;gap:12px;font-family:"JetBrains Mono",monospace;font-size:24px;padding:12px 22px;border-radius:999px;border:1px solid rgba(100,185,162,.5);color:var(--patina);background:rgba(100,185,162,.08)}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--patina);box-shadow:0 0 0 6px rgba(100,185,162,.18)}
+.big{font-family:"Instrument Serif",serif;font-size:132px;line-height:1;color:var(--bronze)}
+.big.p{color:var(--patina)}
+.label{font-size:26px;color:var(--mute);margin-top:12px;line-height:1.35}
+.tag{font-family:"JetBrains Mono",monospace;font-size:22px;letter-spacing:.12em;text-transform:uppercase}
+.bronze{color:var(--bronze)} .patina{color:var(--patina)}
+.check{display:grid;grid-template-columns:56px 1fr 300px;align-items:center;gap:20px;padding:22px 0;border-top:1px solid var(--line)}
+.check:last-child{border-bottom:1px solid var(--line)}
+.check .ok{width:44px;height:44px;border-radius:50%;background:rgba(100,185,162,.15);color:var(--patina);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700}
+.check .todo{background:rgba(214,163,82,.15);color:var(--bronze)}
+.check p{font-size:28px}
+.check .st{font-family:"JetBrains Mono",monospace;font-size:22px;color:var(--mute);text-align:right}
+table{border-collapse:collapse;width:100%}
+td{font-size:28px;padding:20px 0;border-top:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<!-- 1 Cover -->
+<section class="slide glow" style="justify-content:center">
+  <svg width="220" height="220" viewBox="0 0 32 32" style="position:absolute;right:150px;top:50%;transform:translateY(-50%) scale(2.4);transform-origin:right center;opacity:.95" aria-label="Janus coin">
+    <circle cx="16" cy="16" r="15" fill="none" stroke="rgba(239,232,220,.22)" stroke-width=".6"/>
+    <path d="M15 4 A12 12 0 0 0 15 28 Z" fill="#D6A352"/>
+    <path d="M17 4 A12 12 0 0 1 17 28 Z" fill="#64B9A2"/>
+  </svg>
+  <div class="pill" style="align-self:flex-start;margin-bottom:56px;position:relative"><span class="dot"></span>Live on Mezo mainnet</div>
+  <h1>Janus</h1>
+  <h2 style="font-size:76px;margin-top:20px;max-width:1000px">The boost market <i>for Mezo</i></h2>
+  <p class="lead mute" style="margin-top:44px;max-width:960px;position:relative">veBTC holders buy the veMEZO votes that lift their boost up to 5x. veMEZO holders pool their locks and keep 90% of every payment.</p>
+  <div class="footer"><span>janus-mezo.vercel.app</span><span>Mezo Buildathon · Wave 2 · November 2026</span></div>
+</section>
+
+<!-- 2 Problem -->
+<section class="slide paper">
+  <div class="kicker">The problem</div>
+  <h2>Mezo pays veBTC up to <i>5x</i> more. The votes that unlock it are traded by hand.</h2>
+  <div class="spacer"></div>
+  <div class="row">
+    <div class="card grow"><div class="tag" style="color:#8F5E1E">No price</div><h3 style="margin-top:18px">Deals happen in DMs and OTC</h3><p class="mute">A veBTC holder who wants a higher boost has to find voters and negotiate one by one.</p></div>
+    <div class="card grow"><div class="tag" style="color:#8F5E1E">No guarantee</div><h3 style="margin-top:18px">Pay first, hope the votes arrive</h3><p class="mute">Nothing ties the payment to votes landing on the gauge or the boost being applied.</p></div>
+    <div class="card grow"><div class="tag" style="color:#8F5E1E">Idle capital</div><h3 style="margin-top:18px">veMEZO votes earn nothing alone</h3><p class="mute">Small lockers cannot sell their votes, and a lock cannot be used anywhere else.</p></div>
+  </div>
+  <div class="footer"><span class="brand">Janus</span><span>02</span></div>
+</section>
+
+<!-- 3 Solution -->
+<section class="slide glow">
+  <div class="kicker">The solution</div>
+  <h2>One market, <i>two faces</i>.</h2>
+  <div class="spacer"></div>
+  <div class="row" style="gap:40px;position:relative">
+    <div class="card grow" style="border-top:6px solid var(--bronze)">
+      <div class="tag bronze">Buyers · veBTC holders</div>
+      <h3 style="font-family:'Instrument Serif',serif;font-weight:400;font-size:60px;margin:22px 0 26px">Bid for boost</h3>
+      <p>Set a price per vote in MUSD, a target boost up to 5x and an escrow. The order stands every week until it is cancelled.</p>
+      <p class="mute" style="margin-top:20px">Pay only for votes delivered and boost applied on-chain.</p>
+    </div>
+    <div class="card grow" style="border-top:6px solid var(--patina)">
+      <div class="tag patina">Sellers · veMEZO holders</div>
+      <h3 style="font-family:'Instrument Serif',serif;font-weight:400;font-size:60px;margin:22px 0 26px">Earn from your votes</h3>
+      <p>Deposit a veMEZO lock, receive jMEZO: a fungible ERC-20 share of every MEZO in the vault.</p>
+      <p class="mute" style="margin-top:20px">90% of every payment streams to jMEZO holders in MUSD.</p>
+    </div>
+  </div>
+  <div class="footer"><span class="brand">Janus</span><span>03</span></div>
+</section>
+
+<!-- 4 How a round works -->
+<section class="slide">
+  <div class="kicker">How it works</div>
+  <h2>Every epoch, one <i>permissionless</i> round.</h2>
+  <div class="spacer"></div>
+  <svg width="1664" height="420" viewBox="0 0 1664 420" aria-label="Round steps: start, reset, settle, vote, poke, finalize">
+    <defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#5C554C"/></marker></defs>
+    <g font-family="Inter" fill="#EFE8DC">
+      <g><rect x="0" y="40" width="236" height="250" rx="22" fill="#1C1916" stroke="#2E2A25"/><text x="28" y="96" font-family="JetBrains Mono" font-size="24" fill="#D6A352">01</text><text x="28" y="150" font-size="34" font-weight="600">Start</text><text x="28" y="196" font-size="22" fill="#A89F92">Snapshot shards</text><text x="28" y="226" font-size="22" fill="#A89F92">not yet voted</text></g>
+      <line x1="240" y1="165" x2="282" y2="165" stroke="#5C554C" stroke-width="3" marker-end="url(#ar)"/>
+      <g transform="translate(286 0)"><rect x="0" y="40" width="236" height="250" rx="22" fill="#1C1916" stroke="#2E2A25"/><text x="28" y="96" font-family="JetBrains Mono" font-size="24" fill="#D6A352">02</text><text x="28" y="150" font-size="34" font-weight="600">Reset</text><text x="28" y="196" font-size="22" fill="#A89F92">Clear old votes,</text><text x="28" y="226" font-size="22" fill="#A89F92">record supply</text></g>
+      <line x1="526" y1="165" x2="568" y2="165" stroke="#5C554C" stroke-width="3" marker-end="url(#ar)"/>
+      <g transform="translate(572 0)"><rect x="0" y="40" width="236" height="250" rx="22" fill="#1C1916" stroke="#D6A352" stroke-width="2"/><text x="28" y="96" font-family="JetBrains Mono" font-size="24" fill="#D6A352">03</text><text x="28" y="150" font-size="34" font-weight="600">Settle</text><text x="28" y="196" font-size="22" fill="#A89F92">Exact BoostVoter</text><text x="28" y="226" font-size="22" fill="#A89F92">math, best bids first</text></g>
+      <line x1="812" y1="165" x2="854" y2="165" stroke="#5C554C" stroke-width="3" marker-end="url(#ar)"/>
+      <g transform="translate(858 0)"><rect x="0" y="40" width="236" height="250" rx="22" fill="#1C1916" stroke="#2E2A25"/><text x="28" y="96" font-family="JetBrains Mono" font-size="24" fill="#D6A352">04</text><text x="28" y="150" font-size="34" font-weight="600">Vote</text><text x="28" y="196" font-size="22" fill="#A89F92">Shards vote on</text><text x="28" y="226" font-size="22" fill="#A89F92">Mezo BoostVoter</text></g>
+      <line x1="1098" y1="165" x2="1140" y2="165" stroke="#5C554C" stroke-width="3" marker-end="url(#ar)"/>
+      <g transform="translate(1144 0)"><rect x="0" y="40" width="236" height="250" rx="22" fill="#1C1916" stroke="#64B9A2" stroke-width="2"/><text x="28" y="96" font-family="JetBrains Mono" font-size="24" fill="#64B9A2">05</text><text x="28" y="150" font-size="34" font-weight="600">Poke</text><text x="28" y="196" font-size="22" fill="#A89F92">Apply each buyer's</text><text x="28" y="226" font-size="22" fill="#A89F92">new boost</text></g>
+      <line x1="1384" y1="165" x2="1426" y2="165" stroke="#5C554C" stroke-width="3" marker-end="url(#ar)"/>
+      <g transform="translate(1430 0)"><rect x="0" y="40" width="234" height="250" rx="22" fill="#1C1916" stroke="#2E2A25"/><text x="28" y="96" font-family="JetBrains Mono" font-size="24" fill="#D6A352">06</text><text x="28" y="150" font-size="34" font-weight="600">Finalize</text><text x="28" y="196" font-size="22" fill="#A89F92">Charge, pay 90%</text><text x="28" y="226" font-size="22" fill="#A89F92">to jMEZO holders</text></g>
+    </g>
+    <text x="0" y="370" font-family="Inter" font-size="28" fill="#EFE8DC">A buyer is charged only for votes that reached its gauge, and only after its boost was applied.</text>
+    <text x="0" y="412" font-family="Inter" font-size="28" fill="#A89F92">Any keeper can drive any step. A stalled round can be closed by anyone, and undelivered votes cost nothing.</text>
+  </svg>
+  <div class="footer"><span class="brand">Janus</span><span>04</span></div>
+</section>
+
+<!-- 5 Mezo integration -->
+<section class="slide paper">
+  <div class="kicker">Built on Mezo</div>
+  <h2>Composes Mezo's own contracts. <i>Wraps nothing.</i></h2>
+  <div class="spacer"></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:28px">
+    <div class="card"><div class="tag" style="color:#8F5E1E">veMEZO</div><p style="margin-top:14px">Locks held as vote shards, made permanent on deposit</p></div>
+    <div class="card"><div class="tag" style="color:#8F5E1E">veBTC</div><p style="margin-top:14px">Boost read from Mezo's own voting-power formula</p></div>
+    <div class="card"><div class="tag" style="color:#8F5E1E">BoostVoter</div><p style="margin-top:14px">vote, reset, pokeBoost, bribe claims, gauge liveness</p></div>
+    <div class="card"><div class="tag" style="color:#1F6B5A">MUSD</div><p style="margin-top:14px">Bids, escrow, holder income and the protocol fee</p></div>
+    <div class="card"><div class="tag" style="color:#1F6B5A">Mezo pools</div><p style="margin-top:14px">jMEZO/MUSD pool makes the receipt usable capital</p></div>
+    <div class="card"><div class="tag" style="color:#1F6B5A">Mezo Passport</div><p style="margin-top:14px">Bitcoin wallets act through their Mezo smart account</p></div>
+  </div>
+  <div class="footer"><span class="brand">Janus</span><span>05</span></div>
+</section>
+
+<!-- 6 Proof -->
+<section class="slide glow">
+  <div class="kicker">Proof, on-chain</div>
+  <h2>Shipped to <i>mainnet</i>. Proven on testnet.</h2>
+  <div class="spacer"></div>
+  <div class="row" style="gap:28px;position:relative">
+    <div class="card grow"><div class="big p">Live</div><div class="label">on Mezo mainnet, both contracts verified on explorer.mezo.org</div></div>
+    <div class="card grow"><div class="big">106.7</div><div class="label">votes sold in v2 round 1, both boosts applied on-chain</div></div>
+    <div class="card grow"><div class="big">3.60</div><div class="label">MUSD charged: 3.24 to jMEZO holders, 0.36 fee</div></div>
+    <div class="card grow"><div class="big p">179</div><div class="label">contract tests, 98% line coverage, Matsnet fork suite</div></div>
+  </div>
+  <div style="margin-top:40px;position:relative" class="mono">
+    <p style="font-size:24px" class="mute">JanusVault&nbsp;&nbsp;<span style="color:var(--text)">0xDC1db035D17356Fc4aADd9cdB80F264512DA2879</span>&nbsp;&nbsp;&nbsp;&nbsp;BoostMarket&nbsp;&nbsp;<span style="color:var(--text)">0x9098b6f514f322A6f57501cdd92e7aBf79E41870</span></p>
+    <p style="font-size:24px;margin-top:10px" class="mute">Round 1 buyers were our own wallets. Outside buyers are milestone one.</p>
+  </div>
+  <div class="footer"><span class="brand">Janus</span><span>06</span></div>
+</section>
+
+<!-- 7 Wave 2 -->
+<section class="slide">
+  <div class="kicker">Wave 1 feedback, answered</div>
+  <h2 style="font-size:76px">What the judges asked for, and where it stands.</h2>
+  <div class="spacer"></div>
+  <div>
+    <div class="check"><div class="ok">&#10003;</div><p>Aim for a mainnet deployment</p><div class="st">Live, verified</div></div>
+    <div class="check"><div class="ok">&#10003;</div><p>Fix vault bribe claiming, boost pokes and jMEZO fungibility</p><div class="st">v2 contracts</div></div>
+    <div class="check"><div class="ok">&#10003;</div><p>Verify both contracts, fix the mainnet veBTC address</p><div class="st">Done</div></div>
+    <div class="check"><div class="ok">&#10003;</div><p>Add a jMEZO/MUSD pool so the receipt is usable capital</p><div class="st">Live on testnet</div></div>
+    <div class="check"><div class="ok">&#10003;</div><p>Pitch deck, track, team roles and project status</p><div class="st">This deck</div></div>
+    <div class="check"><div class="ok todo">&#8594;</div><p>Real third parties: fill outside bids, run several rounds</p><div class="st">Milestone one</div></div>
+  </div>
+  <div class="footer"><span class="brand">Janus</span><span>07</span></div>
+</section>
+
+<!-- 8 Business model -->
+<section class="slide paper">
+  <div class="kicker">Business model</div>
+  <h2>10% of every vote sale, <i>paid in MUSD</i>.</h2>
+  <div class="spacer"></div>
+  <div class="row" style="gap:40px;align-items:stretch">
+    <div class="card grow">
+      <div class="big" style="color:#8F5E1E">90 / 10</div>
+      <div class="label" style="color:#5E564C">Holders keep 90% of every payment. The treasury takes 10%, hard-capped at 20% in the contract.</div>
+    </div>
+    <div class="card grow">
+      <div class="big" style="color:#1F6B5A;font-size:104px;white-space:nowrap">$25k–225k</div>
+      <div class="label" style="color:#5E564C">Our estimate of Mezo's boost market per year today. It grows with veMEZO adoption and MEZO's price.</div>
+    </div>
+    <div class="card grow" style="background:#1A1714;border-color:#1A1714;color:#EFE8DC">
+      <div class="tag bronze">The flywheel</div>
+      <p style="margin-top:20px;font-size:28px">Better prices for veMEZO bring more locks into the vault. A deeper vault fills more boost demand, and more fees fund growth.</p>
+    </div>
+  </div>
+  <p class="mute" style="margin-top:36px;font-size:26px">Next revenue line: ve-governed MUSD credit, where jMEZO votes direct lending incentives.</p>
+  <div class="footer"><span class="brand">Janus</span><span>08</span></div>
+</section>
+
+<!-- 9 Security -->
+<section class="slide">
+  <div class="kicker">Security</div>
+  <h2>Capped launch. <i>Reviewed</i>, with an audit before scale.</h2>
+  <div class="spacer"></div>
+  <table>
+    <tr><td style="width:520px" class="bronze">Internal review</td><td>No critical or high findings. Two medium findings mitigated on-chain the same day.</td></tr>
+    <tr><td class="bronze">Guard rails</td><td>1,000 MEZO deposit cap, 10 MEZO minimum shard, at most 100 shards and 32 orders per round.</td></tr>
+    <tr><td class="bronze">Custody</td><td>The owner can never move a registered shard or a buyer's escrow.</td></tr>
+    <tr><td class="bronze">Before the cap rises</td><td>Safe multisig owner, timelock on fee and market changes, independent external audit.</td></tr>
+  </table>
+  <div class="footer"><span class="brand">Janus</span><span>09</span></div>
+</section>
+
+<!-- 10 Roadmap -->
+<section class="slide glow">
+  <div class="kicker">Roadmap · we are continuing after the buildathon</div>
+  <h2>From launch to the <i>default venue</i> for Mezo votes.</h2>
+  <div class="spacer"></div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px;position:relative">
+    <div class="card" style="border-top:6px solid var(--patina)"><div class="tag patina">This week</div><h3 style="margin-top:18px">First mainnet round</h3><p class="mute" style="font-size:26px">Founder deposit, a weekly keeper, transactions on the proof page</p></div>
+    <div class="card" style="border-top:6px solid var(--bronze)"><div class="tag bronze">30 days</div><h3 style="margin-top:18px">10 outside wallets</h3><p class="mute" style="font-size:26px">veBTC buyers and veMEZO depositors via Mezo Discord and outreach. Safe multisig and timelock.</p></div>
+    <div class="card" style="border-top:6px solid var(--bronze)"><div class="tag bronze">60–90 days</div><h3 style="margin-top:18px">Liquid jMEZO, audit</h3><p class="mute" style="font-size:26px">Mainnet jMEZO/MUSD pool with a gauge, external audit, cap raised in steps</p></div>
+    <div class="card" style="border-top:6px solid var(--patina)"><div class="tag patina">Next quarter</div><h3 style="margin-top:18px">MUSD credit layer</h3><p class="mute" style="font-size:26px">jMEZO votes allocate MUSD lending incentives across Mezo</p></div>
+  </div>
+  <div class="footer"><span class="brand">Janus</span><span>10</span></div>
+</section>
+
+<!-- 11 Team and ask -->
+<section class="slide paper">
+  <div class="kicker">Team and ask</div>
+  <h2>Built end to end by a founder who is <i>staying</i>.</h2>
+  <div class="spacer"></div>
+  <div class="row" style="gap:40px">
+    <div class="card grow">
+      <div class="tag" style="color:#8F5E1E">Team</div>
+      <h3 style="margin-top:18px">Ashwin Goyal, founder</h3>
+      <p class="mute">Protocol design, Solidity, keeper, web app and go-to-market. Paid for the mainnet launch to run Janus as a product, not a demo.</p>
+    </div>
+    <div class="card grow">
+      <div class="tag" style="color:#1F6B5A">Ask</div>
+      <p style="margin-top:18px">veBTC holders: place the first outside bids.</p>
+      <p>veMEZO holders: deposit and earn MUSD.</p>
+      <p>Mezo team: an intro to boost buyers and a listing in the Mezo docs.</p>
+    </div>
+  </div>
+  <div class="row mono" style="margin-top:40px;gap:48px;font-size:24px">
+    <span>janus-mezo.vercel.app</span><span class="mute">demo: janus-mezo-testnet.vercel.app</span><span class="mute">github.com/let-the-dreamers-rise/janus-mezo</span>
+  </div>
+  <div class="footer"><span class="brand">Janus</span><span>11</span></div>
+</section>
+
+</body>
+</html>
