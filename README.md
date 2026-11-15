@@ -197,7 +197,7 @@ kept modest instead of always sending at the block limit.
 These are not built yet.
 
 - Boost forwards: buy a target boost for several epochs at a quoted price.
-- veBTC autopilot: re-lock, claim and keep the boost applied without manual steps.
+- Autopilot claims: the shipped autopilot re-locks veBTC each week and the keeper keeps boosts applied; claiming rewards for the holder comes next.
 - A jMEZO/MUSD pool with its own gauge.
 - Credit gauges: jMEZO votes that direct MUSD liquidity to lending markets, with voters as first loss.
 

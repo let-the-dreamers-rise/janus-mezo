@@ -35,7 +35,7 @@ low and informational items are design trade-offs, documented here so users can 
 
 | ID | Severity | Title | Status |
 | --- | --- | --- | --- |
-| M-1 | Medium | Owner is a single hot key | Mitigated by caps; multisig planned |
+| M-1 | Medium | Owner is a single hot key | Mitigated: 48-hour timelock owns both contracts; multisig proposer planned |
 | M-2 | Medium | Shard slots could be filled with dust deposits | Fixed on-chain |
 | L-1 | Low | Shards can be redeemed while fills are being poked | Accepted |
 | L-2 | Low | A buyer who can make its own poke revert is not charged | Accepted |
@@ -57,7 +57,13 @@ set the fee up to 20%.
 
 Mitigation: deposits are capped at 1,000 MEZO and shards cannot be stolen, so the worst case
 is misdirected votes for one epoch. Both contracts use `Ownable2Step`, so ownership can move
-to a Safe multisig without a redeploy. Planned before the cap is raised.
+to a Safe multisig without a redeploy.
+
+Update, 15 November 2026: both mainnet contracts are now owned by an OpenZeppelin
+`TimelockController` at `0x0DDb1419BA0DE9e11ABE52dFA93De7ce1Cf94510` with a 48-hour minimum
+delay and no admin (handover tx `0xa56c25ff...6947`). Every owner action is public for 48 hours
+before it can run. The proposer is still the deployer key; making a Safe multisig the proposer
+is the next step.
 
 ### M-2 Shard slots could be filled with dust deposits
 
@@ -89,7 +95,7 @@ Accepted, monitored through `BoostPokeFailed` events.
 ### L-3 Fee can change without a delay
 
 `setFeeBps` takes effect immediately, bounded by the hard cap `MAX_FEE_BPS = 2,000` (20%).
-Planned: a timelock on fee and market changes alongside the multisig.
+Fixed on mainnet: fee and market changes now go through the 48-hour timelock (see M-1).
 
 ### L-4 Pool exclusion order
 
@@ -115,7 +121,7 @@ every round, and a change to `reset`, `vote` or `pokeBoost` semantics would requ
 
 ## Roadmap to raise the cap
 
-1. Move ownership of both contracts to a Safe multisig.
-2. Add a timelock for fee and market changes.
+1. Make a Safe multisig the timelock's proposer and executor.
+2. Done: a 48-hour timelock owns both mainnet contracts.
 3. Independent external audit.
 4. Raise the cap in steps, with the minimum shard size kept at least cap / 100.

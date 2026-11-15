@@ -21,6 +21,13 @@ describe("parseDeployment", () => {
     expect(parsed.deployedAtBlock).toBe(16_344_000n);
   });
 
+  it("reads an optional autopilot address", () => {
+    expect(parseDeployment(valid, 31611).autopilot).toBeUndefined();
+    const withPilot = { ...valid, autopilot: "0x1396413410355a779ad94f08bc174bb227de903e" };
+    expect(parseDeployment(withPilot, 31611).autopilot).toBe("0x1396413410355a779aD94F08BC174bB227de903e");
+    expect(() => parseDeployment({ ...valid, autopilot: "nope" }, 31611)).toThrow(/autopilot/);
+  });
+
   it("rejects a record for another chain", () => {
     expect(() => parseDeployment(valid, 31612)).toThrow(/expected 31612/);
   });

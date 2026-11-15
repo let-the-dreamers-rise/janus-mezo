@@ -15,6 +15,8 @@ export interface JanusDeployment {
   readonly veMezo: Address;
   readonly veBtc: Address;
   readonly musd: Address;
+  /// VeBtcAutopilot, when deployed for this network.
+  readonly autopilot?: Address;
 }
 
 const ADDRESS_KEYS = [
@@ -52,7 +54,16 @@ export function parseDeployment(raw: unknown, chainId: number): JanusDeployment 
   if (typeof block !== "number" && typeof block !== "string") {
     throw new Error("deployment.deployedAtBlock is missing");
   }
-  return { chainId, deployedAtBlock: BigInt(block), ...addresses };
+  const autopilot = record.autopilot;
+  if (autopilot !== undefined && (typeof autopilot !== "string" || !isAddress(autopilot))) {
+    throw new Error("deployment.autopilot is not an address");
+  }
+  return {
+    chainId,
+    deployedAtBlock: BigInt(block),
+    ...addresses,
+    ...(autopilot === undefined ? {} : { autopilot: getAddress(autopilot) }),
+  };
 }
 
 export function loadDeployment(chainId: number): JanusDeployment {

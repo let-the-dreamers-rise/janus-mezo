@@ -1,5 +1,15 @@
-import { encodeFunctionData, erc20Abi, type Address, type Hex } from "viem";
-import { BOOST_GAUGE_FACTORY, DEX_FACTORY, DEX_ROUTER, marketContract, musdContract, vaultContract, veMezoContract, voterContract } from "./contracts";
+import { encodeFunctionData, erc20Abi, zeroAddress, type Address, type Hex } from "viem";
+import {
+  BOOST_GAUGE_FACTORY,
+  DEX_FACTORY,
+  DEX_ROUTER,
+  marketContract,
+  musdContract,
+  vaultContract,
+  veBtcContract,
+  veMezoContract,
+  voterContract,
+} from "./contracts";
 import { dexRouterAbi } from "./pool-snapshot";
 
 export interface Call {
@@ -46,6 +56,15 @@ export const calls = {
       functionName: "safeTransferFrom",
       args: [owner, vaultContract.address, tokenId],
     }),
+  }),
+  /// Opts a veBTC NFT into the autopilot by approving it; the autopilot can only extend the lock.
+  autopilotOn: (autopilot: Address, tokenId: bigint): Call => ({
+    to: veBtcContract.address,
+    data: encodeFunctionData({ abi: veBtcContract.abi, functionName: "approve", args: [autopilot, tokenId] }),
+  }),
+  autopilotOff: (tokenId: bigint): Call => ({
+    to: veBtcContract.address,
+    data: encodeFunctionData({ abi: veBtcContract.abi, functionName: "approve", args: [zeroAddress, tokenId] }),
   }),
   redeem: (tokenId: bigint): Call => vault(encodeFunctionData({ abi: vaultContract.abi, functionName: "redeem", args: [tokenId] })),
   claim: (): Call => vault(encodeFunctionData({ abi: vaultContract.abi, functionName: "claim" })),

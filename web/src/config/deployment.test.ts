@@ -21,6 +21,13 @@ describe("parseDeployment", () => {
     expect(parsed.deployedAtBlock).toBe(16_344_000n);
   });
 
+  it("reads an optional autopilot address", () => {
+    expect(parseDeployment(valid).autopilot).toBeUndefined();
+    const withPilot = parseDeployment({ ...valid, autopilot: "0xfb68b13746d2487abe8499a1e2ea32b866114bb0" });
+    expect(withPilot.autopilot).toBe("0xfb68b13746d2487abE8499A1E2EA32b866114Bb0");
+    expect(() => parseDeployment({ ...valid, autopilot: "nope" })).toThrow(/autopilot/);
+  });
+
   it("rejects malformed records", () => {
     expect(() => parseDeployment(null)).toThrow(/JSON object/);
     expect(() => parseDeployment({ ...valid, market: "0x12" })).toThrow(/market/);

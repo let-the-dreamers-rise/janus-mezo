@@ -13,6 +13,7 @@ import type { MarketSnapshot } from "@/lib/chain/market-snapshot";
 import { nftUrl } from "@/lib/explorer";
 import { staleBoosts } from "@/lib/protocol/keeper/boosts";
 import { formatUtc } from "@/lib/time";
+import { AutopilotToggle } from "./autopilot-toggle";
 import { OrderForm } from "./order-form";
 import { OrderManager } from "./order-manager";
 
@@ -117,6 +118,7 @@ export function VeBtcCard({ nft, snapshot, account }: VeBtcCardProps) {
       <CardContent className="space-y-5">
         {stale ? <ApplyBoost nft={nft} /> : null}
         <Body nft={nft} snapshot={snapshot} account={account} />
+        <AutopilotToggle nft={nft} />
       </CardContent>
     </Card>
   );

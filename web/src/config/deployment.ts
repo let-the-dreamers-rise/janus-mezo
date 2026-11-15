@@ -16,6 +16,8 @@ export interface JanusDeployment {
   readonly veMezo: Address;
   readonly veBtc: Address;
   readonly musd: Address;
+  /// VeBtcAutopilot, which keeps opted-in veBTC locks at the maximum term.
+  readonly autopilot?: Address;
 }
 
 const ADDRESS_FIELDS = ["vault", "market", "owner", "treasury", "boostVoter", "veMezo", "veBtc", "musd"] as const;
@@ -37,7 +39,16 @@ export function parseDeployment(value: unknown): JanusDeployment {
   if (typeof deployedAtBlock !== "number" || deployedAtBlock < 0) {
     throw new Error("deployment.deployedAtBlock must be a block number");
   }
-  return { chainId, deployedAtBlock: BigInt(deployedAtBlock), ...addresses };
+  const { autopilot } = raw;
+  if (autopilot !== undefined && (typeof autopilot !== "string" || !isAddress(autopilot, { strict: false }))) {
+    throw new Error("deployment.autopilot is not an address");
+  }
+  return {
+    chainId,
+    deployedAtBlock: BigInt(deployedAtBlock),
+    ...addresses,
+    ...(autopilot === undefined ? {} : { autopilot: getAddress(autopilot) }),
+  };
 }
 
 export const DEPLOYMENT = parseDeployment(IS_MAINNET ? mainnetRecord : matsnetRecord);

@@ -11,6 +11,7 @@ import {
   type JanusContracts,
 } from "./chain/signals.js";
 import { sendTx, type Signer } from "./chain/tx.js";
+import { runAutopilot } from "./chain/autopilot.js";
 import { chunks, fitBatch } from "./lib/batch.js";
 import { staleBoosts } from "./lib/boosts.js";
 import { PHASE, PHASE_NAMES, nextAction, type Action } from "./lib/planner.js";
@@ -26,6 +27,8 @@ export interface Keeper extends Signer {
   readonly batchSize: bigint;
   /// Gas a single transaction may use; batches shrink until their estimate fits.
   readonly gasBudget: bigint;
+  /// VeBtcAutopilot to drive for opted-in buyers, if this network has one.
+  readonly autopilot?: Address;
 }
 
 export interface Decision {
@@ -142,6 +145,11 @@ export async function drive(keeper: Keeper, maxSteps = 60): Promise<Action> {
       if (decision.phase === PHASE_NAMES[PHASE.Idle]) {
         const poked = await applyBoosts(keeper, decision.roundId);
         if (poked > 0) keeper.log("boosts.applied", { count: poked });
+        if (keeper.autopilot) {
+          const candidates = await boostCandidates(keeper.publicClient, keeper.contracts, decision.roundId);
+          const relocked = await runAutopilot(keeper, keeper.autopilot, candidates);
+          if (relocked > 0) keeper.log("autopilot.relocked", { count: relocked });
+        }
       }
       return decision.action;
     }

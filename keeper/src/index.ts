@@ -54,6 +54,7 @@ async function main(): Promise<void> {
     batchSize,
     gasBudget,
     log,
+    ...(deployment.autopilot ? { autopilot: deployment.autopilot } : {}),
   };
   log("keeper.start", { keeper: account.address, market: deployment.market, watch, batchSize, gasBudget });
 

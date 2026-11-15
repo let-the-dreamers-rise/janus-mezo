@@ -60,13 +60,19 @@ export const SECTIONS: readonly FactSection[] = [
     title: "Rounds run end to end",
     facts: [
       {
-        title: "Three full rounds on Matsnet",
-        detail: "One in each of three weekly epochs. The v2 round on 15 November filled 2 orders with 106.7 votes and charged 3.60 MUSD: 3.24 to jMEZO holders and 0.36 in fees.",
+        title: "Four full rounds on Matsnet",
+        detail: "Two on v1 and two on v2. The first v2 round on 15 November filled 2 orders with 106.7 votes and charged 3.60 MUSD: 3.24 to jMEZO holders and 0.36 in fees.",
         links: [
           { label: "Round 1", kind: "matsnet-tx", value: "0x4fd93bf600eb8893d5d1a7ccc41439a0245b92ba254419fbd9c6bd6a2f7691ab" },
           { label: "Round 2", kind: "matsnet-tx", value: "0xcacac55587938e01302600ee0ef3fe141896e8ce38a6261fbab82cb59e0c54aa" },
           { label: "v2 round 1", kind: "matsnet-tx", value: "0x06729a99fb96542a637b0e11fa563c5a2b21e424f70a4f5834315be199bf5770" },
+          { label: "v2 round 2", kind: "matsnet-tx", value: "0x6528a97805dd8dfb64446e742035360c6ae483d08dbd83646d8994f0fe7bc423" },
         ],
+      },
+      {
+        title: "Rounds run on a schedule",
+        detail: "A GitHub Actions job drives every round every 4 hours with a gas-only keeper wallet that owns nothing. Fill rate, price per vote and holder income are on the market page.",
+        links: [{ label: "keeper.yml", kind: "code", value: ".github/workflows/keeper.yml" }],
       },
       {
         title: "Buyers pay only for boost that was applied",
@@ -98,6 +104,14 @@ export const SECTIONS: readonly FactSection[] = [
         links: [{ label: "Pool on Matsnet", kind: "matsnet-address", value: MATSNET_POOL }],
       },
       {
+        title: "veBTC autopilot",
+        detail: "Turn it on once and the keeper re-locks your veBTC to the 28-day maximum every week, so its boost never decays. The contract has no owner and can only extend a lock.",
+        links: [
+          { label: "Autopilot on mainnet", kind: "mainnet-address", value: "0xfb68b13746d2487abE8499A1E2EA32b866114Bb0" },
+          { label: "VeBtcAutopilot.sol", kind: "code", value: "contracts/src/autopilot/VeBtcAutopilot.sol" },
+        ],
+      },
+      {
         title: "Free demo on Matsnet",
         detail: "The same app runs on testnet with a one-click wallet and a starter kit, so anyone can try every step for free.",
         links: [{ label: "Matsnet market", kind: "matsnet-address", value: MATSNET_MARKET }],
@@ -114,13 +128,21 @@ export const SECTIONS: readonly FactSection[] = [
         links: [{ label: "SECURITY_REVIEW.md", kind: "code", value: "SECURITY_REVIEW.md" }],
       },
       {
+        title: "Owner behind a 48-hour timelock",
+        detail: "A TimelockController owns both mainnet contracts. Every fee, treasury, cap or market change waits 48 hours in public before it can run.",
+        links: [
+          { label: "Timelock", kind: "mainnet-address", value: "0x0DDb1419BA0DE9e11ABE52dFA93De7ce1Cf94510" },
+          { label: "Handover", kind: "mainnet-tx", value: "0xa56c25ff18c29266e8128777e79174f60a7e48410eaacc2faad5f7649dec6947" },
+        ],
+      },
+      {
         title: "Guard rails",
         detail: "1,000 MEZO deposit cap, 10 MEZO minimum shard, at most 100 shards and 32 open orders, and a fee hard-capped at 20%.",
         links: [{ label: "Minimum raised to 10 MEZO", kind: "mainnet-tx", value: "0xcfcf29b3b5b0a2d1d1f132d146055412a5c7d3b46c819d1f90b366b4a3bf07f5" }],
       },
       {
         title: "Tested",
-        detail: "179 contract tests with 98% line coverage, a fork suite against real Mezo contracts, and 250+ app tests.",
+        detail: "194 contract tests, a fork suite against real Mezo contracts, and 250+ app tests.",
         links: [{ label: "Tests", kind: "code", value: "contracts/test" }],
       },
     ],
