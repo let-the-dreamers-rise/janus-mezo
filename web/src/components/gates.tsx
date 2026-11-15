@@ -7,6 +7,7 @@ import { DemoWalletButton } from "@/components/onboarding/demo-wallet-button";
 import { EmptyState } from "@/components/states";
 import { WalletButton } from "@/components/wallet/wallet-button";
 import { DEPLOYMENT } from "@/config/deployment";
+import { NETWORK_INFO } from "@/config/network";
 import { shortAddress } from "@/lib/explorer";
 
 /// The deployer account that holds the seeded demo NFTs, bids and jMEZO.
@@ -29,7 +30,7 @@ export function WatchBanner({ address }: { readonly address: Address }) {
 export function NotDeployed() {
   return (
     <EmptyState icon={Hammer} title="Janus is not deployed yet">
-      The contracts go live on Mezo Matsnet first. This page fills in once they do.
+      Janus is not live on {NETWORK_INFO.label} yet. This page fills in once it is.
     </EmptyState>
   );
 }
@@ -45,17 +46,19 @@ export function ConnectCard({ title, children }: { readonly title: string; reado
             <WalletButton />
             <DemoWalletButton />
           </div>
-          <a
-            href={`?as=${DEMO_ACCOUNT}`}
-            className="rounded-sm text-sm text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            Or browse the seeded market account read-only
-          </a>
+          {NETWORK_INFO.demoEnabled ? (
+            <a
+              href={`?as=${DEMO_ACCOUNT}`}
+              className="rounded-sm text-sm text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Or browse the seeded market account read-only
+            </a>
+          ) : null}
         </div>
       }
     >
       {children ??
-        "Bitcoin wallets act through their Mezo smart account, so they work here too. No wallet? A demo wallet takes one click and comes with a free starter kit."}
+        `Bitcoin wallets act through their Mezo smart account, so they work here too.${NETWORK_INFO.demoEnabled ? " No wallet? A demo wallet takes one click and comes with a free starter kit." : ""}`}
     </EmptyState>
   );
 }

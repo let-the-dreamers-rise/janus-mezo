@@ -8,7 +8,7 @@ import { WagmiProvider } from "wagmi";
 import { ThemeProvider, useTheme } from "@/components/theme/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { createWagmiConfig } from "@/lib/wallet/config";
-import { mezoTestnet } from "@/lib/wallet/passport";
+import { activeChain } from "@/lib/wallet/passport";
 
 const rainbowShared = { borderRadius: "medium", fontStack: "system" } as const;
 const rainbowLight = lightTheme({ ...rainbowShared, accentColor: "hsl(32 65% 34%)", accentColorForeground: "hsl(40 60% 97%)" });
@@ -17,7 +17,7 @@ const rainbowDark = darkTheme({ ...rainbowShared, accentColor: "hsl(35 62% 58%)"
 function WalletLayer({ children }: { children: ReactNode }) {
   const { resolved } = useTheme();
   return (
-    <RainbowKitProvider initialChain={mezoTestnet} theme={resolved === "dark" ? rainbowDark : rainbowLight}>
+    <RainbowKitProvider initialChain={activeChain} theme={resolved === "dark" ? rainbowDark : rainbowLight}>
       <TooltipProvider>{children}</TooltipProvider>
       <Toaster theme={resolved} position="bottom-right" closeButton richColors />
     </RainbowKitProvider>

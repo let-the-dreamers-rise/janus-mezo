@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SITE } from "@/config/site";
 import { useJanusAccount } from "@/hooks/use-janus-account";
 import { useStarterKit } from "@/hooks/use-starter-kit";
+import { NETWORK_INFO } from "@/config/network";
 import { explorerUrl } from "@/lib/explorer";
 import type { KitClaim, KitStatus } from "@/lib/starter-kit/client";
 import { KIT, KIT_KINDS, wanted, type KitKind } from "@/lib/starter-kit/kit";
@@ -175,6 +176,7 @@ export function StarterKitCard({ className }: { readonly className?: string }) {
   const { status } = useStarterKit();
   const amounts = status.data?.kit ?? DEFAULT_AMOUNTS;
   const missing = account.data ? new Set(wanted(holdingsOf(account.data)).map((item) => item.kind)) : undefined;
+  if (!NETWORK_INFO.demoEnabled) return null;
   return (
     <Card className={cn("border-primary/30", className)}>
       <CardHeader>

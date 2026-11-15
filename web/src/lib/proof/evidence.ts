@@ -1,5 +1,4 @@
 import { SITE } from "@/config/site";
-import { explorerUrl } from "@/lib/explorer";
 
 /// proven: visible on chain or in the repo today. built: shipped and tested, first live run
 /// still ahead. partial: some of the ask is done. open: not done.
@@ -140,7 +139,7 @@ export const PROOF_ITEMS: readonly ProofItem[] = [
 export function proofHref(link: ProofLink): string {
   if (link.kind === "code") return `${SITE.repoUrl}/blob/main/${link.value}`;
   if (link.kind === "mainnet") return `${SITE.mainnetExplorerUrl}/address/${link.value}`;
-  return explorerUrl(link.kind, link.value);
+  return `${SITE.matsnetExplorerUrl}/${link.kind}/${link.value}`;
 }
 
 export function statusCounts(items: readonly ProofItem[]): Record<ProofStatus, number> {

@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { CoinMark } from "@/components/brand/logo";
 import { ButtonLink } from "@/components/ui/button";
+import { NETWORK_INFO } from "@/config/network";
 
 function TwoFacesCoin() {
   return (
@@ -42,13 +43,17 @@ export function Hero() {
           </ButtonLink>
         </div>
         <p className="text-sm text-muted-foreground">
-          Live on Mezo Matsnet.{" "}
-          <Link
-            href="/start/"
-            className="rounded-sm font-medium text-foreground underline underline-offset-4 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            New here? Try both sides with a demo wallet and a free starter kit.
-          </Link>
+          Live on {NETWORK_INFO.label}.{" "}
+          {NETWORK_INFO.demoEnabled ? (
+            <Link
+              href="/start/"
+              className="rounded-sm font-medium text-foreground underline underline-offset-4 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              New here? Try both sides with a demo wallet and a free starter kit.
+            </Link>
+          ) : (
+            "Capped launch. The contracts are unaudited."
+          )}
         </p>
       </div>
       <TwoFacesCoin />

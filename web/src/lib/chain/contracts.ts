@@ -1,7 +1,10 @@
 import { boostMarketAbi, janusVaultAbi } from "@/lib/abi/janus";
 import { boostVoterAbi, erc20Abi, votingEscrowAbi } from "@/lib/abi/mezo";
 import { DEPLOYMENT } from "@/config/deployment";
-import { MEZO_MATSNET } from "@/config/mezo-addresses";
+import { MEZO_MAINNET, MEZO_MATSNET } from "@/config/mezo-addresses";
+import { IS_MAINNET } from "@/config/network";
+
+const MEZO = IS_MAINNET ? MEZO_MAINNET : MEZO_MATSNET;
 
 export const vaultContract = { address: DEPLOYMENT.vault, abi: janusVaultAbi } as const;
 export const marketContract = { address: DEPLOYMENT.market, abi: boostMarketAbi } as const;
@@ -9,7 +12,7 @@ export const voterContract = { address: DEPLOYMENT.boostVoter, abi: boostVoterAb
 export const veMezoContract = { address: DEPLOYMENT.veMezo, abi: votingEscrowAbi } as const;
 export const veBtcContract = { address: DEPLOYMENT.veBtc, abi: votingEscrowAbi } as const;
 export const musdContract = { address: DEPLOYMENT.musd, abi: erc20Abi } as const;
-export const mezoTokenContract = { address: MEZO_MATSNET.mezoToken, abi: erc20Abi } as const;
-export const BOOST_GAUGE_FACTORY = MEZO_MATSNET.boostGaugeFactory;
-export const DEX_ROUTER = MEZO_MATSNET.dexRouter;
-export const DEX_FACTORY = MEZO_MATSNET.dexFactory;
+export const mezoTokenContract = { address: MEZO.mezoToken, abi: erc20Abi } as const;
+export const BOOST_GAUGE_FACTORY = MEZO.boostGaugeFactory;
+export const DEX_ROUTER = MEZO.dexRouter;
+export const DEX_FACTORY = MEZO.dexFactory;

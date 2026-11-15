@@ -1,5 +1,5 @@
 import { defineChain, type Address, type Chain } from "viem";
-import { MEZO_MATSNET } from "./addresses.js";
+import { MEZO_MAINNET, MEZO_MATSNET } from "./addresses.js";
 import { mezoMatsnet } from "./chain.js";
 
 export const mezoMainnet = defineChain({
@@ -18,7 +18,7 @@ export interface Network {
 
 const NETWORKS: Readonly<Record<string, Network>> = {
   matsnet: { chain: mezoMatsnet, dexRouter: MEZO_MATSNET.dexRouter },
-  mainnet: { chain: mezoMainnet, dexRouter: "0x16A76d3cd3C1e3CE843C6680d6B37E9116b5C706" },
+  mainnet: { chain: mezoMainnet, dexRouter: MEZO_MAINNET.dexRouter },
 };
 
 /// Picks the network from JANUS_NETWORK. A typo must fail rather than fall back, so a

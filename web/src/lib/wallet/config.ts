@@ -1,14 +1,22 @@
 import { injectedWallet, metaMaskWallet, walletConnectWallet } from "@rainbow-me/rainbowkit/wallets";
 import { createConfig, http, type Config } from "wagmi";
+import { IS_MAINNET, NETWORK_INFO } from "@/config/network";
 import { SITE } from "@/config/site";
 import { demoWallet } from "./demo-connector";
 import {
+  activeChain,
   getConfig,
-  mezoTestnet,
+  okxWalletMezoMainnet,
   okxWalletMezoTestnet,
+  unisatWalletMezoMainnet,
   unisatWalletMezoTestnet,
+  xverseWalletMezoMainnet,
   xverseWalletMezoTestnet,
 } from "./passport";
+
+const bitcoinWallets = IS_MAINNET
+  ? [unisatWalletMezoMainnet, okxWalletMezoMainnet, xverseWalletMezoMainnet]
+  : [unisatWalletMezoTestnet, okxWalletMezoTestnet, xverseWalletMezoTestnet];
 
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? "";
 
@@ -23,8 +31,8 @@ const evmWallets = projectId ? [metaMaskWallet, walletConnectWallet] : [injected
 export function createWagmiConfig(): Config {
   if (typeof window === "undefined") {
     return createConfig({
-      chains: [mezoTestnet],
-      transports: { [mezoTestnet.id]: http() },
+      chains: [activeChain],
+      transports: { [activeChain.id]: http() },
       ssr: true,
     });
   }
@@ -32,15 +40,12 @@ export function createWagmiConfig(): Config {
     appName: SITE.name,
     appDescription: SITE.description,
     appUrl: window.location.origin,
-    mezoNetwork: "testnet",
+    mezoNetwork: IS_MAINNET ? "mainnet" : "testnet",
     walletConnectProjectId: projectId,
     wallets: [
-      {
-        groupName: "Bitcoin",
-        wallets: [unisatWalletMezoTestnet, okxWalletMezoTestnet, xverseWalletMezoTestnet],
-      },
+      { groupName: "Bitcoin", wallets: bitcoinWallets },
       { groupName: "Ethereum", wallets: evmWallets },
-      { groupName: "No wallet? Try it", wallets: [demoWallet] },
+      ...(NETWORK_INFO.demoEnabled ? [{ groupName: "No wallet? Try it", wallets: [demoWallet] }] : []),
     ],
     ssr: true,
   });

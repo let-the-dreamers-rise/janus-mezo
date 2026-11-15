@@ -8,6 +8,7 @@ import { EmptyState, ErrorState } from "@/components/states";
 import { ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { IS_DEPLOYED } from "@/config/deployment";
+import { NETWORK_INFO } from "@/config/network";
 import { SITE } from "@/config/site";
 import { useJanusAccount } from "@/hooks/use-janus-account";
 import { useMarket } from "@/hooks/use-market";
@@ -44,7 +45,7 @@ function YourVeBtc({ snapshot }: { readonly snapshot: MarketSnapshot | undefined
           }
         >
           Lock BTC in Mezo Earn to get a veBTC NFT, then come back to bid for its boost.
-          {account.readOnly ? null : " Or take the free starter kit below, which includes one."}
+          {account.readOnly || !NETWORK_INFO.demoEnabled ? null : " Or take the free starter kit below, which includes one."}
         </EmptyState>
         {account.readOnly ? null : <StarterKitCard />}
       </div>

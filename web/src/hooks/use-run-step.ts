@@ -7,7 +7,7 @@ import { calls, type Call } from "@/lib/chain/calls";
 import type { MarketSnapshot } from "@/lib/chain/market-snapshot";
 import { fitBatch } from "@/lib/protocol/keeper/batch";
 import type { Step } from "@/lib/protocol/round-step";
-import { mezoTestnet, useWalletAccount } from "@/lib/wallet/passport";
+import { activeChain, useWalletAccount } from "@/lib/wallet/passport";
 import { useJanusTx } from "./use-janus-tx";
 
 /// The keeper's limits: at most 10 shards per batch, and a batch must estimate under 6M gas.
@@ -41,7 +41,7 @@ async function batchSize(client: PublicClient | undefined, account: Address | un
 /// Sends the call that moves the market forward, exactly as the keeper would.
 export function useRunStep() {
   const tx = useJanusTx();
-  const client = usePublicClient({ chainId: mezoTestnet.id });
+  const client = usePublicClient({ chainId: activeChain.id });
   const { accountAddress } = useWalletAccount();
 
   const run = useCallback(

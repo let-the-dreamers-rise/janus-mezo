@@ -21,6 +21,7 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 import { DEPLOYMENT, IS_DEPLOYED } from "@/config/deployment";
 import { matsnet } from "@/config/matsnet";
+import { IS_MAINNET } from "@/config/network";
 import { MEZO_MATSNET } from "@/config/mezo-addresses";
 import { janusVaultAbi } from "@/lib/abi/janus";
 import { erc20Abi, votingEscrowAbi } from "@/lib/abi/mezo";
@@ -239,7 +240,7 @@ export function kitChain({ publicClient, walletClient }: KitClients, kit: KitCon
 /// or malformed. The key is read here only and never leaves the server.
 export function kitChainFromEnv(env: Readonly<Record<string, string | undefined>> = process.env): KitChain | null {
   const key = env.FAUCET_PRIVATE_KEY?.trim();
-  if (!IS_DEPLOYED || !key || !PRIVATE_KEY.test(key)) return null;
+  if (IS_MAINNET || !IS_DEPLOYED || !key || !PRIVATE_KEY.test(key)) return null;
   const transport = http(env.MEZO_RPC_URL || undefined, { timeout: 15_000, retryCount: 1 });
   const account = privateKeyToAccount(key as Hex);
   return kitChain({

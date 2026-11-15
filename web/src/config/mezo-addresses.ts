@@ -17,6 +17,22 @@ export const MEZO_MATSNET = {
   multicall3: "0xcA11bde05977b3631167028862bE2a173976CA11",
 } as const satisfies Record<string, Address>;
 
+/// Mezo protocol contracts on mainnet (chain id 31612). Proxies, not implementations.
+export const MEZO_MAINNET = {
+  boostVoter: "0x2Ba614a598Cffa5a19d683cDCA97bac3a49313d1",
+  veMezo: "0xb90fdAd3DFD180458D62Cc6acedc983D78E20122",
+  veBtc: "0x3D4b1b884A7a1E59fE8589a3296EC8f8cBB6f279",
+  factoryRegistry: "0x04B94f55780682478c8D8329368AAAfD320F4D32",
+  musd: "0xdD468A1DDc392dcdbEf6db6e34E89AA338F9F186",
+  mezoToken: "0x7B7c000000000000000000000000000000000001",
+  btcToken: "0x7b7C000000000000000000000000000000000000",
+  /// Decoded from a live BoostVoter.createBoostGauge call on mainnet.
+  boostGaugeFactory: "0x4150DcE1c6d013fa7EBaf4fFCd879D08daA0CCAd",
+  dexRouter: "0x16A76d3cd3C1e3CE843C6680d6B37E9116b5C706",
+  dexFactory: "0x83FE469C636C4081b87bA5b3Ae9991c6Ed104248",
+  multicall3: "0xcA11bde05977b3631167028862bE2a173976CA11",
+} as const satisfies Record<string, Address>;
+
 /// Janus contracts. Filled in by the deploy script output (see contracts/deployments).
 export type JanusAddresses = {
   vault: Address;

@@ -4,6 +4,7 @@ import { KeyRound } from "lucide-react";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { useDemoWallet } from "@/hooks/use-demo-wallet";
 import { useMounted } from "@/hooks/use-mounted";
+import { NETWORK_INFO } from "@/config/network";
 
 interface DemoWalletButtonProps {
   readonly className?: string;
@@ -24,7 +25,7 @@ export function DemoWalletButton({
 }: DemoWalletButtonProps) {
   const demo = useDemoWallet();
   const mounted = useMounted();
-  if (mounted && demo.active) return null;
+  if (!NETWORK_INFO.demoEnabled || (mounted && demo.active)) return null;
   return (
     <Button
       variant={variant}

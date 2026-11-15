@@ -6,15 +6,16 @@ import { Wordmark } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { WalletButton } from "@/components/wallet/wallet-button";
+import { NETWORK_INFO } from "@/config/network";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { href: "/start/", label: "Start", hint: "tour" },
+  ...(NETWORK_INFO.demoEnabled ? [{ href: "/start/", label: "Start", hint: "tour" }] : []),
   { href: "/boost/", label: "Boost", hint: "veBTC" },
   { href: "/earn/", label: "Earn", hint: "veMEZO" },
   { href: "/market/", label: "Market", hint: "rounds" },
   { href: "/proof/", label: "Proof", hint: "evidence" },
-] as const;
+];
 
 function NavLinks({ className }: { readonly className?: string }) {
   const pathname = usePathname() ?? "/";
@@ -49,8 +50,14 @@ export function SiteHeader() {
         </Link>
         <NavLinks className="hidden md:flex" />
         <div className="ml-auto flex items-center gap-2">
+          <a
+            href={NETWORK_INFO.twin.url}
+            className="hidden h-10 items-center rounded-md px-2 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:inline-flex"
+          >
+            {NETWORK_INFO.twin.label}
+          </a>
           <Badge tone="bronze" className="hidden sm:inline-flex">
-            Mezo Matsnet
+            {NETWORK_INFO.label}
           </Badge>
           <ThemeToggle />
           <WalletButton />

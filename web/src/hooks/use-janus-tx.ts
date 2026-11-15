@@ -7,7 +7,7 @@ import type { Address, Hash, Hex, TransactionReceipt } from "viem";
 import { usePublicClient, useSendTransaction, useSwitchChain } from "wagmi";
 import { explainError } from "@/lib/errors";
 import { MAX_TX_GAS, gasWithHeadroom, likelyOutOfGas } from "@/lib/protocol/keeper/gas";
-import { mezoTestnet, useSendTransaction as usePassportSend, useWalletAccount } from "@/lib/wallet/passport";
+import { activeChain, useSendTransaction as usePassportSend, useWalletAccount } from "@/lib/wallet/passport";
 import { recordActivity } from "./use-activity";
 
 export interface TxRequest {
@@ -35,7 +35,7 @@ export interface TxState {
 /// simulated cleanly runs out of gas, because matsnet's gas estimates can come in low.
 export function useJanusTx() {
   const { accountAddress, networkFamily, chainId } = useWalletAccount();
-  const client = usePublicClient({ chainId: mezoTestnet.id });
+  const client = usePublicClient({ chainId: activeChain.id });
   const { sendTransactionAsync } = useSendTransaction();
   const { switchChainAsync } = useSwitchChain();
   const { sendTransaction: sendThroughPassport } = usePassportSend();
@@ -46,8 +46,8 @@ export function useJanusTx() {
   const sign = useCallback(
     async ({ to, data, value = 0n }: TxRequest, gas: bigint | undefined): Promise<Hash | undefined> => {
       if (bitcoin) return (await sendThroughPassport(to, value, data))?.hash;
-      if (chainId !== mezoTestnet.id) await switchChainAsync({ chainId: mezoTestnet.id });
-      return sendTransactionAsync({ to, data, value, gas, chainId: mezoTestnet.id });
+      if (chainId !== activeChain.id) await switchChainAsync({ chainId: activeChain.id });
+      return sendTransactionAsync({ to, data, value, gas, chainId: activeChain.id });
     },
     [bitcoin, chainId, sendThroughPassport, sendTransactionAsync, switchChainAsync],
   );

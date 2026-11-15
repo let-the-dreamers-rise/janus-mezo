@@ -1,8 +1,10 @@
 import { getAddress, isAddress, zeroAddress, type Address } from "viem";
-import record from "./deployment.json";
+import mainnetRecord from "./deployment.mainnet.json";
+import matsnetRecord from "./deployment.json";
+import { IS_MAINNET } from "./network";
 
-/// The matsnet deployment, copied from contracts/deployments/31611.json by `pnpm sync` in
-/// keeper/. Before the first deploy every Janus address is zero and the app says so.
+/// The deployment for this build's network, copied from contracts/deployments/ by `pnpm sync`
+/// in keeper/. Before the first deploy every Janus address is zero and the app says so.
 export interface JanusDeployment {
   readonly chainId: number;
   readonly deployedAtBlock: bigint;
@@ -38,5 +40,5 @@ export function parseDeployment(value: unknown): JanusDeployment {
   return { chainId, deployedAtBlock: BigInt(deployedAtBlock), ...addresses };
 }
 
-export const DEPLOYMENT = parseDeployment(record);
+export const DEPLOYMENT = parseDeployment(IS_MAINNET ? mainnetRecord : matsnetRecord);
 export const IS_DEPLOYED = DEPLOYMENT.vault !== zeroAddress && DEPLOYMENT.market !== zeroAddress;

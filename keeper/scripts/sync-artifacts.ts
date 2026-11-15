@@ -4,7 +4,7 @@
 ///   - Mezo ABIs and addresses (web)
 ///   - the keeper's pure decision code: epochs, round planner, shard and boost signals and
 ///     gas-fitted batching, so the web app's "Run next step" decides exactly as the keeper
-///   - the matsnet deployment record, once contracts/deployments/31611.json exists (web)
+///   - the deployment records for matsnet and mainnet, once each exists (web)
 /// Usage: pnpm sync   (run `forge build` in ../contracts first)
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -29,7 +29,10 @@ const COPIES = [
 /// The keeper runs as Node ESM and imports siblings as "./x.js"; the web bundler wants "./x".
 const forBundler = (source: string) => source.replace(/from "(\.\.?\/[^"]+)\.js"/g, 'from "$1"');
 
-const DEPLOYMENT = { from: "contracts/deployments/31611.json", to: "web/src/config/deployment.json" };
+const DEPLOYMENTS = [
+  { from: "contracts/deployments/31611.json", to: "web/src/config/deployment.json" },
+  { from: "contracts/deployments/31612.json", to: "web/src/config/deployment.mainnet.json" },
+] as const;
 
 function readAbi(artifact: string): unknown[] {
   const path = at(`contracts/out/${artifact}`);
@@ -60,11 +63,13 @@ if (web) {
     const header = `// Generated from ${from} by keeper/scripts/sync-artifacts.ts. Do not edit by hand.\n`;
     write(to, header + forBundler(readFileSync(at(from), "utf8")));
   }
-  if (existsSync(at(DEPLOYMENT.from))) {
-    mkdirSync(dirname(at(DEPLOYMENT.to)), { recursive: true });
-    copyFileSync(at(DEPLOYMENT.from), at(DEPLOYMENT.to));
-    console.log(`wrote ${DEPLOYMENT.to}`);
-  } else {
-    console.log(`no ${DEPLOYMENT.from} yet; web keeps its current deployment record`);
+  for (const { from, to } of DEPLOYMENTS) {
+    if (existsSync(at(from))) {
+      mkdirSync(dirname(at(to)), { recursive: true });
+      copyFileSync(at(from), at(to));
+      console.log(`wrote ${to}`);
+    } else {
+      console.log(`no ${from} yet; web keeps its current deployment record`);
+    }
   }
 }

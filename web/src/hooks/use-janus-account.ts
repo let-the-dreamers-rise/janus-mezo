@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { usePublicClient } from "wagmi";
 import { IS_DEPLOYED } from "@/config/deployment";
 import { readAccountSnapshot } from "@/lib/chain/account-snapshot";
-import { mezoTestnet, useWalletAccount } from "@/lib/wallet/passport";
+import { activeChain, useWalletAccount } from "@/lib/wallet/passport";
 import { useWatchAddress } from "./use-watch-address";
 
 export const accountQueryKey = (address: string | undefined) =>
@@ -16,7 +16,7 @@ export function useJanusAccount() {
   const { accountAddress, walletAddress, networkFamily, isConnected, chainId } = useWalletAccount();
   const watched = useWatchAddress();
   const address = isConnected ? accountAddress : watched;
-  const client = usePublicClient({ chainId: mezoTestnet.id });
+  const client = usePublicClient({ chainId: activeChain.id });
   const query = useQuery({
     queryKey: accountQueryKey(address),
     queryFn: () => {
@@ -32,7 +32,7 @@ export function useJanusAccount() {
     networkFamily,
     isConnected,
     readOnly: !isConnected && Boolean(watched),
-    wrongNetwork: isConnected && networkFamily === "evm" && chainId !== mezoTestnet.id,
+    wrongNetwork: isConnected && networkFamily === "evm" && chainId !== activeChain.id,
     ...query,
   };
 }

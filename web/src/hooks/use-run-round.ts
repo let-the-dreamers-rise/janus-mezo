@@ -7,7 +7,7 @@ import { usePublicClient } from "wagmi";
 import { readMarketSnapshot } from "@/lib/chain/market-snapshot";
 import { nextStep } from "@/lib/protocol/round-step";
 import { runRound } from "@/lib/protocol/run-round";
-import { mezoTestnet } from "@/lib/wallet/passport";
+import { activeChain } from "@/lib/wallet/passport";
 import { MARKET_QUERY_KEY } from "./use-market";
 import { useRunStep } from "./use-run-step";
 
@@ -21,7 +21,7 @@ interface RoundProgress {
 /// market between calls. Each call is still signed on its own.
 export function useRunRound() {
   const runner = useRunStep();
-  const client = usePublicClient({ chainId: mezoTestnet.id });
+  const client = usePublicClient({ chainId: activeChain.id });
   const queryClient = useQueryClient();
   const [progress, setProgress] = useState<RoundProgress>({ running: false });
 

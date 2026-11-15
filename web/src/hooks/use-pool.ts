@@ -5,11 +5,11 @@ import type { Address } from "viem";
 import { usePublicClient } from "wagmi";
 import { IS_DEPLOYED } from "@/config/deployment";
 import { readPoolSnapshot } from "@/lib/chain/pool-snapshot";
-import { mezoTestnet } from "@/lib/wallet/passport";
+import { activeChain } from "@/lib/wallet/passport";
 
 /// The jMEZO/MUSD pool and this account's router allowances.
 export function usePool(account: Address | undefined) {
-  const client = usePublicClient({ chainId: mezoTestnet.id });
+  const client = usePublicClient({ chainId: activeChain.id });
   return useQuery({
     queryKey: ["janus", "pool", account?.toLowerCase() ?? "none"] as const,
     queryFn: () => {

@@ -2,6 +2,7 @@ import { Address } from "@/components/address";
 import { CoinMark } from "@/components/brand/logo";
 import { IntroButton } from "@/components/onboarding/intro-button";
 import { DEPLOYMENT, IS_DEPLOYED } from "@/config/deployment";
+import { IS_MAINNET, NETWORK_INFO } from "@/config/network";
 import { SITE } from "@/config/site";
 
 export function SiteFooter() {
@@ -15,7 +16,7 @@ export function SiteFooter() {
           </div>
           <p className="max-w-md text-sm text-muted-foreground">{SITE.description}</p>
           <p className="text-xs text-muted-foreground">
-            Testnet software on Mezo Matsnet. Contracts are unaudited.{" "}
+            {IS_MAINNET ? "Capped launch on Mezo Mainnet." : "Testnet software on Mezo Matsnet."} Contracts are unaudited.{" "}
             <a
               href={SITE.repoUrl}
               target="_blank"
@@ -23,9 +24,15 @@ export function SiteFooter() {
               className="rounded-sm text-foreground underline underline-offset-4 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Source code
+            </a>{" "}
+            <a
+              href={NETWORK_INFO.twin.url}
+              className="rounded-sm text-foreground underline underline-offset-4 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {NETWORK_INFO.twin.label}
             </a>
           </p>
-          <IntroButton variant="ghost" size="sm" className="-ml-3" />
+          {NETWORK_INFO.demoEnabled ? <IntroButton variant="ghost" size="sm" className="-ml-3" /> : null}
         </div>
         <dl className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-[auto_auto]">
           {IS_DEPLOYED ? (
